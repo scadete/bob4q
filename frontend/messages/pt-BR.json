@@ -25,9 +25,11 @@
   },
   "lab": {
     "title": "Laboratório Quântico",
-    "run_on_qpu": "Executar no QPU",
-    "running": "Executando…",
-    "result": "Resultado"
+    "index_intro": "Explore os notebooks do workshop abaixo. Cada um roda localmente no Jupyter — abra o arquivo no caminho indicado, ou use o comando de execução dentro dele.",
+    "run_locally": "Executar localmente",
+    "run_hint": "Este notebook está no repositório em",
+    "back": "← Todos os notebooks",
+    "not_found": "Notebook não encontrado."
   },
   "docs": {
     "locale_switcher": "Idioma",

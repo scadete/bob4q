@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { Theme } from "@carbon/react";
+// KaTeX styles for math rendered in docs and notebook markdown cells.
+import "katex/dist/katex.min.css";
 
 export const metadata: Metadata = {
   title: "Quantum Experience Lab",

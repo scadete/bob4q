@@ -21,9 +21,9 @@
 - [PLATFORM] Cross-platform: macOS/Windows/Linux — sh scripts for POSIX, .ps1 scripts for Windows
 - [SECURITY] No cloud API for Qiskit Code Assistant — local model only
 - [WORKSHOP] Format: half-day (3–4 h), lean, 2–3 core modules, live demo-driven
-- [LAB] Jupyter notebook-style; JupyterLite embedded in Next.js frontend via iframe (zero-install, WASM/Pyodide)
+- [LAB] Pivoted away from embedded JupyterLite (2026-07-30): too much machinery (70M Pyodide bundle, COOP/COEP, build step). Notebooks now run locally in Jupyter; `/lab` presents them read-only with repo path + a `uv run … jupyter lab` command. Registry/loader: `frontend/src/lib/notebooks.ts`
 - [LAB] Notebooks use helper modules from `notebooks/lib/` to keep cell code minimal
-- [LAB] Simulator only in JupyterLite (Qiskit Aer-wasm); real QPU via FastAPI backend "Run on QPU" button
+- [LAB] Simulation via `qiskit.primitives.StatevectorSampler` (no Aer); optional real QPU still via FastAPI backend
 - [DEMO] `/demo` route = presenter-driven full-screen slideshow (Carbon layout + Manim animations); facilitator controls, participants watch
 
 ## Status
@@ -37,20 +37,20 @@
 - [x] Docs/i18n structure created (en + pt-BR, quantum-fundamentals + bob-setup)
 - [x] Workshop setup scripts complete (check-prereqs.sh/.ps1 + render-all.sh/.ps1)
 - [x] CI pipeline (ci.yml + build.yml)
-- [x] LAB-01: JupyterLite embedded in frontend (/lab route, LabEmbed component, COOP/COEP headers)
+- [x] LAB: `/lab` presents notebooks read-only (index + `/lab/[slug]` reader) with "Run locally" panel; JupyterLite removed
 - [x] Starter notebook created (notebooks/01-quantum-fundamentals.ipynb)
 - [x] notebooks/lib/visuals.py helper library created (draw_circuit, plot_counts, run_and_plot)
 - [x] Dockerfile suite fixed (uv pip install, pnpm workspace context, mjs config deduped)
-- [x] JupyterLite static bundle built + committed (frontend/public/jupyterlite/, 70M)
 - [ ] First end-to-end demo working
 
 ## Gotchas (learned)
-- build-jupyterlite scripts needed `--with jupyter-server` — required by `jupyter lite build --contents` to bake in notebooks (else RuntimeError)
-- Notebook 01 Bell cell used `result[0].data.meas` — wrong: `QuantumCircuit(2,2)` names its classical register `c`, so DataBin only has `.c`. Fixed to `.data.c`. Verified all cells on qiskit==1.2.0 (StatevectorSampler, no Aer per Pyodide constraint)
+- Notebook 01 Bell cell used `result[0].data.meas` — wrong: `QuantumCircuit(2,2)` names its classical register `c`, so DataBin only has `.c`. Fixed to `.data.c`. Verified all cells on qiskit==1.2.0.
+- Markdown pipeline bug (both docs and lab): `unified().use(remark)` passes a *processor* as a plugin → `attacher.call is not a function`. Correct form is `remark().use(remarkMath).use(remarkRehype).use(rehypeKatex).use(rehypeStringify)`. Also `katex` must be a *direct* dep for `import "katex/dist/katex.min.css"` to resolve under pnpm.
+- Notebooks run locally (real Jupyter), so the install cell uses `%pip install`, not Pyodide's `micropip`.
 
 ## Blockers / Open Questions
 - ghcr.io org name TBD → placeholder `YOUR_ORG` used
-- Qiskit Aer-wasm (qiskit-aer) NOT available in Pyodide — using `qiskit.primitives.StatevectorSampler` instead; Aer only via FastAPI backend "Run on QPU"
+- Notebooks use `qiskit.primitives.StatevectorSampler` (no Aer dependency); optional Aer/real QPU only via FastAPI backend
 - Workshop target locales TBD → starting with en, pt-BR
 
 ## References

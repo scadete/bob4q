@@ -108,28 +108,30 @@ Items are **ready** when all unknowns are resolved and acceptance criteria are c
 
 ---
 
-## LAB — JupyterLite + Notebooks
+## LAB — Local Notebooks + `/lab` presentation
 
-### LAB-01 · JupyterLite feasibility spike
-**Status:** `done` · **Priority:** `P1` · **Depends on:** —
-**Scope:** `notebooks/` + `frontend/public/jupyterlite/`
-- Build a minimal JupyterLite instance with `jupyterlite-core` + `jupyterlite-pyodide-kernel`
-- Verify `qiskit` installs via `%pip install qiskit` in Pyodide
-- Verify `qiskit-aer` (or `qiskit-aer-wasm` if available) works for `AerSimulator`
-- Verify `matplotlib` + `pylatexenc` work (needed for circuit drawing)
-- **AC:** A notebook cell runs `from qiskit import QuantumCircuit; qc = QuantumCircuit(2); qc.h(0); qc.cx(0,1); print(qc.draw())` without error in the browser
-- **Output:** Document findings in `MEMORY-WORKSHOP.md`; unblock or redesign LAB-02
+> **Pivot (2026-07-30):** dropped embedded JupyterLite (70M Pyodide bundle, COOP/COEP,
+> build step). Notebooks now run locally in Jupyter; `/lab` presents them read-only.
+> LAB-01 (feasibility spike) and LAB-02 (embed) are superseded by LAB-02b below.
+
+### LAB-01 · JupyterLite feasibility spike — SUPERSEDED
+**Status:** `done (superseded)` · **Priority:** `P1` · **Depends on:** —
+- Spike showed Pyodide can run Qiskit (StatevectorSampler; no Aer-wasm), but the
+  bundle/COOP-COEP/build machinery wasn't worth it for a workshop → pivoted to local.
 
 ---
 
-### LAB-02 · JupyterLite embed in Next.js `/lab`
-**Status:** `done` · **Priority:** `P1` · **Depends on:** LAB-01, INFRA-01
-**Scope:** `frontend/`
-- Copy JupyterLite built assets into `frontend/public/jupyterlite/`
-- Automate via build script (integrate into `pnpm build` or separate `scripts/build-lab.sh`)
-- `/lab` page: full-height `<iframe src="/jupyterlite/index.html?path=notebooks/01-quantum-fundamentals.ipynb">`
-- "Run on QPU" button in the Next.js parent page (outside iframe) → `POST /api/circuit/run`
-- **AC:** `/lab` loads JupyterLite; first notebook auto-opens; QPU button calls backend
+### LAB-02 · JupyterLite embed in Next.js `/lab` — SUPERSEDED by LAB-02b
+**Status:** `done (superseded)` · **Priority:** `P1` · **Depends on:** LAB-01, INFRA-01
+
+### LAB-02b · Read-only notebook presentation in `/lab`
+**Status:** `done` · **Priority:** `P1` · **Depends on:** INFRA-01, LAB-03
+**Scope:** `frontend/src/lib/notebooks.ts`, `frontend/src/app/[locale]/lab/**`
+- `NOTEBOOKS` registry + loader reads `../notebooks/*.ipynb`
+- `/lab` lists notebooks (title, description, repo path); `/lab/[slug]` renders
+  markdown cells (KaTeX-aware) + code cells as `<pre>`, with a "Run locally" panel
+- **AC:** `/lab` lists the notebook; `/lab/01-quantum-fundamentals` renders all cells
+  and shows the `uv run … jupyter lab` command; math renders via KaTeX
 
 ---
 

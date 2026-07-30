@@ -2,12 +2,10 @@ import { notFound } from "next/navigation";
 import { promises as fs } from "fs";
 import path from "path";
 import { remark } from "remark";
-import remarkHtml from "remark-html";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import rehypeStringify from "rehype-stringify";
 import remarkRehype from "remark-rehype";
-import { unified } from "unified";
 import { getTranslations } from "next-intl/server";
 import LocaleSwitcher from "@/components/LocaleSwitcher";
 
@@ -32,8 +30,7 @@ export default async function DocsPage({
     );
   }
 
-  const processed = await unified()
-    .use(remark)
+  const processed = await remark()
     .use(remarkMath)
     .use(remarkRehype)
     .use(rehypeKatex)

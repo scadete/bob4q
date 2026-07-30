@@ -49,10 +49,12 @@ uv run manim render scenes/qubit.py QubitScene -qh  # high quality (prod)
 # Output → manim/media/videos/ — copy to frontend/public/videos/
 ```
 
-### JupyterLite (run from repo root)
+### Notebooks (run locally from repo root)
 ```bash
-sh scripts/build-jupyterlite.sh   # build JupyterLite → frontend/public/jupyterlite/
-# Requires only: uv — packages are fetched on demand via uv run --with
+# Notebooks live in notebooks/ and run locally in Jupyter (not in the browser).
+uv run --with jupyterlab --with qiskit==1.2.0 --with matplotlib --with pylatexenc \
+  jupyter lab notebooks/01-quantum-fundamentals.ipynb
+# The /lab route presents them read-only; the "Run locally" panel shows this command.
 ```
 
 ### Root
@@ -66,17 +68,15 @@ docker compose up          # Docker fallback — same compose file
 ```powershell
 .\scripts\setup.ps1            # local mode setup
 .\scripts\setup-container.ps1  # container mode setup
-.\scripts\build-jupyterlite.ps1 # build JupyterLite static bundle
 podman compose up
 ```
 
 ## Critical Patterns
 
-### JupyterLite → Frontend pipeline
-JupyterLite is a **pre-built** static site (not built at Next.js build time). Run `scripts/build-jupyterlite.sh` once after cloning, or whenever notebooks change. Output goes to `frontend/public/jupyterlite/`. The `/lab` route embeds it in an iframe via `<LabEmbed>`.
-- **Aer-wasm is NOT available in Pyodide** — the in-browser kernel uses `qiskit.primitives.StatevectorSampler`
-- For Aer / real QPU: use the "Run on QPU" button → FastAPI backend
-- COOP/COEP headers (required by SharedArrayBuffer/Pyodide) are set in `frontend/next.config.ts`
+### Notebooks → `/lab` presentation
+Notebooks in `notebooks/` are **run locally** by developers (not in the browser). The `/lab` route presents them read-only: `src/lib/notebooks.ts` is the registry + loader (reads `../notebooks/*.ipynb`), `/lab` lists them, `/lab/[slug]` renders markdown cells (KaTeX-aware, via `remark()` → `remark-rehype` → `rehype-katex`) and code cells as `<pre>` blocks, with a "Run locally" panel showing the `uv run … jupyter lab` command.
+- Add a notebook: drop the `.ipynb` in `notebooks/`, add an entry to `NOTEBOOKS` in `src/lib/notebooks.ts`
+- Notebooks use `qiskit.primitives.StatevectorSampler` (no Aer dependency); classical register is named `c`, so read counts via `result[0].data.c`
 
 ### MCP Server transport duality
 `mcp-server/server.py` supports `--http` flag → switches from stdio (local Bob integration) to HTTP SSE (remote/demo). Bob config differs per mode — see `docs/setup/bob-config.md`.

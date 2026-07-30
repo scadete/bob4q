@@ -1,6 +1,6 @@
 """
 notebooks/lib/visuals.py
-Helper utilities for workshop notebooks running in JupyterLite (Pyodide).
+Helper utilities for the workshop notebooks (run locally in Jupyter).
 
 Usage:
     from lib.visuals import draw_circuit, plot_counts
