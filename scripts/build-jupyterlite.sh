@@ -35,6 +35,7 @@ mkdir -p "$BUILD_DIR" "$LITE_DIR"
 uv run \
   --with jupyterlite-core \
   --with jupyterlite-pyodide-kernel \
+  --with jupyter-server \
   jupyter lite build \
     --contents "$NOTEBOOKS_DIR" \
     --lite-dir "$LITE_DIR" \

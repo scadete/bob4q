@@ -41,8 +41,12 @@
 - [x] Starter notebook created (notebooks/01-quantum-fundamentals.ipynb)
 - [x] notebooks/lib/visuals.py helper library created (draw_circuit, plot_counts, run_and_plot)
 - [x] Dockerfile suite fixed (uv pip install, pnpm workspace context, mjs config deduped)
-- [ ] JupyterLite static bundle built + committed (run scripts/build-jupyterlite.sh)
+- [x] JupyterLite static bundle built + committed (frontend/public/jupyterlite/, 70M)
 - [ ] First end-to-end demo working
+
+## Gotchas (learned)
+- build-jupyterlite scripts needed `--with jupyter-server` — required by `jupyter lite build --contents` to bake in notebooks (else RuntimeError)
+- Notebook 01 Bell cell used `result[0].data.meas` — wrong: `QuantumCircuit(2,2)` names its classical register `c`, so DataBin only has `.c`. Fixed to `.data.c`. Verified all cells on qiskit==1.2.0 (StatevectorSampler, no Aer per Pyodide constraint)
 
 ## Blockers / Open Questions
 - ghcr.io org name TBD → placeholder `YOUR_ORG` used

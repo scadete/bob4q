@@ -36,6 +36,7 @@ New-Item -ItemType Directory -Force -Path $LiteDir  | Out-Null
 uv run `
   --with jupyterlite-core `
   --with jupyterlite-pyodide-kernel `
+  --with jupyter-server `
   jupyter lite build `
     --contents $Notebooks `
     --lite-dir $LiteDir `
