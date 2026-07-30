@@ -1,0 +1,42 @@
+version: '3.9'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/frontend.Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_MCP_URL=http://mcp-server:8765
+    depends_on:
+      - backend
+      - mcp-server
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../docker/backend.Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - MCP_SERVER_URL=http://mcp-server:8765
+    depends_on:
+      - mcp-server
+
+  mcp-server:
+    build:
+      context: ./mcp-server
+      dockerfile: ../docker/mcp.Dockerfile
+    ports:
+      - "8765:8765"
+    environment:
+      - IBMQ_API_TOKEN=${IBMQ_API_TOKEN:-}
+      - MODEL_PATH=/models/qiskit-code-assistant
+    volumes:
+      - mcp-models:/models
+    command: ["python", "server.py", "--http", "--port", "8765"]
+
+volumes:
+  mcp-models:
