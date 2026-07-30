@@ -13,7 +13,11 @@ import { useEffect, useRef, useState } from "react";
 import { Loading } from "@carbon/react";
 
 interface LabEmbedProps {
-  /** Path inside JupyterLite to open, e.g. "notebooks/01-quantum-fundamentals.ipynb" */
+  /**
+   * Notebook to open, as a path relative to the JupyterLite contents root
+   * (the build flattens `notebooks/` into the root), e.g.
+   * "01-quantum-fundamentals.ipynb".
+   */
   notebookPath?: string;
 }
 
@@ -21,9 +25,12 @@ export function LabEmbed({ notebookPath }: LabEmbedProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [ready, setReady] = useState(false);
 
+  // The bundle root index.html is only a splash page. The single-document
+  // Notebook app lives at notebooks/index.html and opens a file via ?path=;
+  // fall back to the full Lab UI when no notebook is specified.
   const src = notebookPath
-    ? `/jupyterlite/index.html?path=${encodeURIComponent(notebookPath)}`
-    : "/jupyterlite/index.html";
+    ? `/jupyterlite/notebooks/index.html?path=${encodeURIComponent(notebookPath)}`
+    : "/jupyterlite/lab/index.html";
 
   // Once the iframe fires "load" the JupyterLite shell is at least bootstrapped.
   // Pyodide itself will keep loading inside the iframe; nothing to do on our end.

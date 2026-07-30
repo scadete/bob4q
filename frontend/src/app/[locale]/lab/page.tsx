@@ -66,7 +66,7 @@ export default function LabPage() {
       </div>
 
       {/* JupyterLite embedded via LabEmbed (no SSR) */}
-      <LabEmbed notebookPath="notebooks/01-quantum-fundamentals.ipynb" />
+      <LabEmbed notebookPath="01-quantum-fundamentals.ipynb" />
     </main>
   );
 }
