@@ -1,0 +1,3 @@
+# Videos directory — populated by scripts/render-all.sh
+# Do not commit large .mp4 files
+*.mp4

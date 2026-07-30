@@ -26,10 +26,21 @@
 
 ## Routing
 - `/` → workshop home / landing
-- `/lab` → interactive quantum lab
-- `/docs/[locale]/[slug]` → workshop documentation
-- `/demo` → presenter mode (full-screen Carbon slides)
+- `/lab` → JupyterLite iframe (full-page embed, zero-install)
+- `/docs/[locale]/[slug]` → workshop documentation (Markdown rendered)
+- `/demo` → presenter slideshow (full-screen Carbon layout, keyboard navigation, Manim videos embedded)
+
+## JupyterLite Embed
+- Served as `<iframe src="/jupyterlite/index.html">` — JupyterLite built assets in `frontend/public/jupyterlite/`
+- Notebooks served from `notebooks/` directory (copied into JupyterLite content at build time)
+- "Run on QPU" button lives outside the iframe (in the parent Next.js page), calls FastAPI directly
+
+## Demo Route (`/demo`)
+- Full-screen Carbon `g100` layout, no navigation chrome
+- Slide state in URL (`/demo?slide=3`) so facilitator can deep-link
+- Keyboard: ArrowRight/ArrowLeft to navigate; `F` for fullscreen
+- Each slide can embed a Manim `<video>` or a Carbon data viz component
 
 ## Open Questions
-- [ ] Presenter/demo mode layout design TBD
-- [ ] Video fallback for no-JS (static image from Manim?)
+- [ ] Qiskit Aer-wasm availability in JupyterLite — verify before building lab module
+- [ ] JupyterLite build step: integrate into `pnpm build` or separate script?

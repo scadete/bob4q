@@ -1,10 +1,14 @@
-version: '3.9'
+# Compose file — works with Podman Compose and Docker Compose
+# Podman (recommended): podman compose up
+# Docker fallback:      docker compose up
+#
+# Podman Desktop: https://podman-desktop.io (macOS/Windows/Linux GUI)
 
 services:
   frontend:
     build:
-      context: ./frontend
-      dockerfile: ../docker/frontend.Dockerfile
+      context: .
+      dockerfile: docker/frontend.Dockerfile
     ports:
       - "3000:3000"
     environment:
@@ -33,10 +37,34 @@ services:
       - "8765:8765"
     environment:
       - IBMQ_API_TOKEN=${IBMQ_API_TOKEN:-}
-      - MODEL_PATH=/models/qiskit-code-assistant
+      - OLLAMA_HOST=http://ollama:11434
+      - GRANITE_MODEL=${GRANITE_MODEL:-granite3.1-dense:8b}
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
     volumes:
-      - mcp-models:/models
-    command: ["python", "server.py", "--http", "--port", "8765"]
+      - ollama-models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        ollama serve &
+        OLLAMA_PID=$$!
+        echo "Waiting for Ollama to start..."
+        until curl -sf http://localhost:11434 > /dev/null; do sleep 2; done
+        echo "Pulling model ${GRANITE_MODEL:-granite3.1-dense:8b} ..."
+        ollama pull ${GRANITE_MODEL:-granite3.1-dense:8b}
+        wait $$OLLAMA_PID
 
 volumes:
-  mcp-models:
+  ollama-models:

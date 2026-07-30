@@ -1,0 +1,29 @@
+# --- Node / Next.js ---
+node_modules/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# --- JupyterLite build scratch (output in frontend/public/jupyterlite is committed) ---
+.jupyterlite_build/
+.jupyterlite_config/
+.jupyterlite.doit.db
+
+# --- Local tool caches ---
+.tokensave/
+.headroom_wrap_marker.json
+.claude/settings.local.json
+
+# --- Editor / OS ---
+.DS_Store
+*.log
+.env
+.env.local

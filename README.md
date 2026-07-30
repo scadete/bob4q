@@ -85,7 +85,7 @@ See [`docs/i18n/en/bob-setup.md`](docs/i18n/en/bob-setup.md) for configuration i
 | MCP Server | Python MCP, Qiskit, local LLM |
 | i18n (UI) | next-intl |
 | i18n (Docs) | Markdown per locale |
-| Container | Docker Compose |
+| Container | Podman Compose (Docker Compose compatible) |
 
 ## ✦ Contributing
 

@@ -13,7 +13,9 @@
 - New workshop module requires: docs in BOTH `docs/i18n/en/` AND `docs/i18n/pt-BR/` + route in Next.js + navigation update
 
 ### Deployment topology
-- Workshop participants: EITHER full Docker Compose OR manual (pnpm + uv per package) — both paths must stay working
+- Container runtime: Podman (preferred, rootless) or Docker (fallback) — same compose file, scripts auto-detect
+- Windows participants use Podman Desktop (WSL2 backend) — setup via `scripts\setup-container.ps1`
+- Workshop participants: EITHER full `podman compose up` OR manual (pnpm + uv per package) — both paths must stay working
 - Container image for MCP server must be self-contained (model bundled or model pulled on first start — TBD)
 
 ### Carbon DS constraints

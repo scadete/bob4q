@@ -2,6 +2,17 @@
 
 ## Non-obvious context for answering questions about bob4q
 
+### Container runtime
+- Project uses **Podman**, not Docker — same compose file works with both but Podman is the default
+- Scripts auto-detect: `podman` first, fall back to `docker compose`
+- Windows path: Podman Desktop (WSL2 backend) → `scripts\setup-container.ps1`
+- "Docker Compose" references in older docs should be read as "Podman Compose"
+
+### Cross-platform scripts
+- `scripts/*.sh` → macOS + Linux
+- `scripts/*.ps1` → Windows PowerShell (no admin required)
+- Both do the same thing — local setup and container setup
+
 ### Counterintuitive structure
 - `manim/` contains Python animation source — output is pre-rendered video, NOT runtime rendering
 - `docs/i18n/` is workshop Markdown documentation, separate from `frontend/messages/` which is UI strings

@@ -1,0 +1,9 @@
+{
+  "LiteBuildConfig": {
+    "apps": ["lab"],
+    "no_sourcemaps": false
+  },
+  "PyodideKernelAddon": {
+    "piplite_urls": []
+  }
+}

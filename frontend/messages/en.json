@@ -1,0 +1,42 @@
+{
+  "nav": {
+    "home": "Home",
+    "lab": "Lab",
+    "docs": "Documentation",
+    "demo": "Demo"
+  },
+  "home": {
+    "hero_title": "Quantum Experience Lab",
+    "hero_tagline": "Hands-on quantum computing with IBM Bob + Qiskit",
+    "cta_lab": "Start Lab",
+    "cta_demo": "View Slides",
+    "modules_title": "Workshop Modules",
+    "module_1_title": "Quantum Fundamentals",
+    "module_1_body": "Qubits, superposition, entanglement — from scratch with interactive circuits.",
+    "module_2_title": "First Circuit with IBM Bob",
+    "module_2_body": "Use IBM Bob's AI assistant to write, explain, and refine your first quantum circuit.",
+    "module_3_title": "Simulator vs Real QPU",
+    "module_3_body": "Run circuits on the Aer simulator then send to a real IBM Quantum backend.",
+    "prereqs_title": "Prerequisites",
+    "prereq_node": "Node.js ≥ 20",
+    "prereq_python": "Python ≥ 3.11",
+    "prereq_ollama": "Ollama (local mode)",
+    "prereq_podman": "Podman or Docker (container mode)"
+  },
+  "lab": {
+    "title": "Quantum Lab",
+    "run_on_qpu": "Run on QPU",
+    "running": "Running…",
+    "result": "Result"
+  },
+  "docs": {
+    "locale_switcher": "Language",
+    "not_found": "Document not found."
+  },
+  "demo": {
+    "prev": "Previous",
+    "next": "Next",
+    "fullscreen": "Fullscreen",
+    "slide_counter": "Slide {current} of {total}"
+  }
+}

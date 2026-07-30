@@ -45,12 +45,19 @@ Workshop Participant
 4. Frontend `<QuantumAnimation>` serves via `<video>`
 
 ## Deployment Modes
-| Mode | How | MCP transport |
-|---|---|---|
-| Local (full) | `docker compose up` | stdio or HTTP |
-| Local (dev) | pnpm dev + uv run separately | stdio |
-| Workshop VM/Cloud | Docker image pull | HTTP SSE |
-| Production demo | Hosted containers | HTTP SSE |
+| Mode | OS | How | MCP transport |
+|---|---|---|---|
+| Local (full) | mac/linux | `podman compose up` | stdio or HTTP |
+| Local (full) | windows | `podman compose up` (Podman Desktop) | HTTP |
+| Local (dev) | any | pnpm dev + uv run separately | stdio |
+| Workshop VM/Cloud | any | Podman/Docker image pull | HTTP SSE |
+| Production demo | any | Hosted containers | HTTP SSE |
+
+## Container Strategy
+- Compose file is version-field-free (compatible with Podman Compose + Docker Compose)
+- Podman preferred: rootless by default, no daemon, better security for workshop VMs
+- Docker fallback: identical compose file, scripts auto-detect `podman` vs `docker`
+- Windows: use Podman Desktop (WSL2 backend) — scripts in `scripts/*.ps1`
 
 ## Constraints
 - Qiskit Code Assistant CANNOT be called via cloud — local model only

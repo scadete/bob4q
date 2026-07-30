@@ -1,0 +1,42 @@
+{
+  "nav": {
+    "home": "Início",
+    "lab": "Laboratório",
+    "docs": "Documentação",
+    "demo": "Apresentação"
+  },
+  "home": {
+    "hero_title": "Quantum Experience Lab",
+    "hero_tagline": "Computação quântica na prática com IBM Bob + Qiskit",
+    "cta_lab": "Iniciar Laboratório",
+    "cta_demo": "Ver Slides",
+    "modules_title": "Módulos do Workshop",
+    "module_1_title": "Fundamentos Quânticos",
+    "module_1_body": "Qubits, superposição, emaranhamento — do zero com circuitos interativos.",
+    "module_2_title": "Primeiro Circuito com IBM Bob",
+    "module_2_body": "Use o assistente de IA do IBM Bob para escrever, explicar e refinar seu primeiro circuito quântico.",
+    "module_3_title": "Simulador vs QPU Real",
+    "module_3_body": "Execute circuitos no simulador Aer e envie para um backend real da IBM Quantum.",
+    "prereqs_title": "Pré-requisitos",
+    "prereq_node": "Node.js ≥ 20",
+    "prereq_python": "Python ≥ 3.11",
+    "prereq_ollama": "Ollama (modo local)",
+    "prereq_podman": "Podman ou Docker (modo container)"
+  },
+  "lab": {
+    "title": "Laboratório Quântico",
+    "run_on_qpu": "Executar no QPU",
+    "running": "Executando…",
+    "result": "Resultado"
+  },
+  "docs": {
+    "locale_switcher": "Idioma",
+    "not_found": "Documento não encontrado."
+  },
+  "demo": {
+    "prev": "Anterior",
+    "next": "Próximo",
+    "fullscreen": "Tela cheia",
+    "slide_counter": "Slide {current} de {total}"
+  }
+}

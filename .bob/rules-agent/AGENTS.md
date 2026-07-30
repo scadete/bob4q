@@ -2,6 +2,12 @@
 
 ## Non-obvious coding rules for bob4q
 
+### Cross-platform
+- Shell scripts (`scripts/*.sh`) → POSIX sh (macOS + Linux); Windows equivalents in `scripts/*.ps1`
+- Never use `docker` directly in code or scripts — use auto-detect pattern: check `podman` first, fall back to `docker`
+- Path separators: use `/` in code; only `\` in Windows `.ps1` user-facing messages
+- `cp -n` (no-clobber) has no native Windows equivalent — `.ps1` scripts use `Test-Path` guard instead
+
 ### MCP Server
 - `server.py` MUST handle both stdio and HTTP transport in one file — use `--http` argparse flag to switch
 - When adding a new MCP tool, register it in both `mcp-server/server.py` AND update `MEMORY-MCP.md`

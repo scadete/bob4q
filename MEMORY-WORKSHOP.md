@@ -6,18 +6,73 @@
 - Mix of IBM employees and external attendees
 - Fresh laptops or workshop-provided VMs
 
-## Setup Requirements (per participant)
-- Docker (preferred) OR Python 3.11+ + Node 20+ + pnpm
-- 8GB+ RAM (Qiskit Code Assistant model)
-- `scripts/setup.sh` → one-shot local setup
-- `scripts/setup-docker.sh` → Docker-only path
+## Format
+- **Half-day (3–4 h)** — lean, live demo-driven
+- Facilitator presents on projector via `/demo` slideshow; participants follow along in JupyterLite
 
-## Workshop Modules (planned)
-1. Intro to quantum computing concepts (Manim animations)
-2. First Qiskit circuit with IBM Bob assistance
-3. Running on simulator vs real backend
-4. Exploring results with visualizations
-5. Advanced: Variational algorithms with AI assistance
+## Setup Requirements (per participant)
+- Podman (preferred) OR Python 3.11+ + Node 20+ + pnpm + Ollama
+- 8GB+ RAM (Ollama + Granite model)
+- `scripts/setup.sh` (POSIX) or `scripts/setup.ps1` (Windows)
+- `scripts/setup-docker.sh` (POSIX) or `scripts/setup-container.ps1` (Windows) for container path
+
+## Workshop Modules (half-day scope — 2–3 modules)
+1. **Quantum Fundamentals** — qubits, superposition, entanglement (Manim + slides)
+2. **First Circuit with IBM Bob** — Qiskit in JupyterLite, Bob assistance via MCP
+3. **Simulator vs Real QPU** — run in Aer (browser), escalate to IBM Quantum via "Run on QPU" button
+
+> Modules 4–5 (results visualization, variational algorithms) are backlogged for future workshops.
+
+## Lab: JupyterLite
+- Embedded in Next.js frontend as `<iframe>` at `/lab`
+- WASM/Pyodide runtime — zero-install for participants
+- **Aer-wasm is NOT available in Pyodide** — use `qiskit.primitives.StatevectorSampler` for in-browser simulation
+- Notebooks in `notebooks/` — shared helper code in `notebooks/lib/` (imported in cells to keep noise low)
+- Real QPU: separate "Run on QPU" button → FastAPI backend → IBM Quantum
+
+## LAB-01 — JupyterLite Feasibility Spike Findings
+
+### Build pipeline
+- `scripts/build-jupyterlite.sh` uses `uv run --with jupyterlite-core --with jupyterlite-pyodide-kernel jupyter lite build`
+- No global pip install required — `uv` fetches packages on demand
+- `--lite-dir` and `--output-dir` **must** point to different directories; script fixed accordingly
+- Built output lands in `.jupyterlite_build/`, then `cp`-ed to `frontend/public/jupyterlite/`
+- Config: `notebooks/jupyter_lite_config.json` (enables Lab app, Pyodide kernel)
+- Windows equivalent: `scripts/build-jupyterlite.ps1` (same fix applied)
+
+### Package availability in Pyodide
+| Package | Pyodide availability | Install method | Notes |
+|---|:---:|---|---|
+| `qiskit==1.2.0` | ✅ | `micropip.install` | Confirmed on PyPI with pure-Python wheel |
+| `matplotlib` | ✅ | `micropip.install` | Pyodide ships a pre-compiled version |
+| `pylatexenc` | ✅ | `micropip.install` | **Required** for `qc.draw(output="mpl")` — added to notebook install cell |
+| `qiskit-aer` | ❌ | n/a | C-extension; no WASM build available |
+| `qiskit-aer-wasm` | ❌ | n/a | Package does not exist on PyPI (as of 2024) |
+
+### Design decision: Aer simulator
+`qiskit-aer` cannot run in Pyodide (C-extension, no WASM wheel).
+**Chosen path:** `qiskit.primitives.StatevectorSampler` — pure Python, ships with `qiskit` core,
+produces identical measurement counts for the circuits in the workshop.
+The notebook already documents this limitation for participants.
+Full Aer / real QPU → FastAPI backend via "Run on QPU" button.
+
+### COOP/COEP headers
+`next.config.ts` already sets `Cross-Origin-Opener-Policy: same-origin` and
+`Cross-Origin-Embedder-Policy: require-corp` on all routes, plus
+`Cross-Origin-Resource-Policy: cross-origin` on `/jupyterlite/*` assets — required for
+`SharedArrayBuffer` (Pyodide's WASM threading). No further changes needed.
+
+### Acceptance criteria — status
+- [x] Build script produces a static JupyterLite site
+- [x] Notebook opens automatically via `?path=` query param in `LabEmbed.tsx`
+- [x] `from qiskit import QuantumCircuit; qc = QuantumCircuit(2); qc.h(0); qc.cx(0,1); print(qc.draw())` — runs via StatevectorSampler path
+- [x] `matplotlib` + `pylatexenc` available → `qc.draw(output="mpl")` works
+- [x] Findings documented here → LAB-02 unblocked
+
+## Demo Route
+- `/demo` = full-screen Carbon slideshow for facilitator
+- Embeds Manim animation videos at key concept moments
+- Facilitator navigates with keyboard; participants watch on projector
 
 ## Documentation i18n
 - Docs source: `docs/i18n/{locale}/{module}.md`
@@ -32,6 +87,6 @@
 - No jargon without definition
 
 ## Open Questions
-- [ ] Workshop duration (half-day vs full-day format affects module depth)
-- [ ] VM provisioning strategy for large groups
-- [ ] Recording/async version of workshop content
+- [x] Qiskit Aer-wasm availability in Pyodide — **resolved** (LAB-01): Aer not available; use StatevectorSampler
+- [ ] VM provisioning strategy for large groups (TBD)
+- [ ] Recording/async version of workshop content (future)
