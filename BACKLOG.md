@@ -70,9 +70,8 @@ Items are **ready** when all unknowns are resolved and acceptance criteria are c
 - Tool: `run_circuit(code: str, backend: str) → dict` — execute Qiskit circuit via `qiskit_ibm_runtime` or `AerSimulator`
 - Tool: `explain_circuit(code: str) → str` — POST to Ollama `http://localhost:11434/v1/chat/completions` with granite model
 - Tool: `list_backends() → list[str]` — return available backends
-- Tool: `render_animation(scene_name: str) → str` — trigger Manim render, return output path
 - Dual transport: stdio default, `--http` flag starts FastAPI/SSE on port 8765
-- **AC:** Bob can connect in stdio mode; `uv run server.py --http` starts without error; all 4 tools callable
+- **AC:** Bob can connect in stdio mode; `uv run server.py --http` starts without error; all 3 tools callable
 
 ---
 

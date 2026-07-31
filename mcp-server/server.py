@@ -17,8 +17,6 @@ import asyncio
 import json
 import logging
 import os
-import subprocess
-import sys
 from typing import Any
 
 import httpx
@@ -115,34 +113,6 @@ def list_backends() -> list[str]:
     return backends
 
 
-def render_animation(scene_name: str) -> str:
-    """MCP tool: trigger a Manim render and return the output path."""
-    scene_map = {
-        "qubit": ("scenes/qubit.py", "QubitScene"),
-        "superposition": ("scenes/superposition.py", "SuperpositionScene"),
-        "entanglement": ("scenes/entanglement.py", "EntanglementScene"),
-    }
-    if scene_name not in scene_map:
-        return f"Unknown scene '{scene_name}'. Available: {list(scene_map.keys())}"
-
-    scene_file, scene_class = scene_map[scene_name]
-    manim_dir = os.path.join(os.path.dirname(__file__), "..", "manim")
-    result = subprocess.run(  # noqa: S603
-        [sys.executable, "-m", "manim", "render", scene_file, scene_class, "-qh"],
-        cwd=manim_dir,
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        return f"Render failed:\n{result.stderr}"
-
-    output_path = os.path.join(
-        manim_dir, "media", "videos", scene_file.replace(".py", ""), "1080p60",
-        f"{scene_class}.mp4",
-    )
-    return output_path if os.path.exists(output_path) else f"Render succeeded but output not found at {output_path}"
-
-
 # ---------------------------------------------------------------------------
 # MCP Server setup
 # ---------------------------------------------------------------------------
@@ -186,20 +156,6 @@ TOOLS: list[Tool] = [
         description="List available quantum computing backends (simulator + IBM Quantum if token set).",
         inputSchema={"type": "object", "properties": {}},
     ),
-    Tool(
-        name="render_animation",
-        description="Trigger a Manim animation render for a given scene name and return the output path.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "scene_name": {
-                    "type": "string",
-                    "description": "Scene name: 'qubit', 'superposition', or 'entanglement'",
-                }
-            },
-            "required": ["scene_name"],
-        },
-    ),
 ]
 
 
@@ -227,10 +183,6 @@ def create_server() -> Server:
             elif name == "list_backends":
                 backends = list_backends()
                 return [TextContent(type="text", text=json.dumps(backends))]
-
-            elif name == "render_animation":
-                path = render_animation(scene_name=arguments["scene_name"])
-                return [TextContent(type="text", text=path)]
 
             else:
                 return [TextContent(type="text", text=f"Unknown tool: {name}")]

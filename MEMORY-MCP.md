@@ -14,7 +14,6 @@
   - `run_circuit` → execute Qiskit circuit on simulator or real backend
   - `explain_circuit` → pass circuit to Qiskit Code Assistant (via Ollama) for explanation
   - `list_backends` → list available IBM Quantum backends
-  - `render_animation` → trigger Manim render for a scene
 
 ## Container Image
 - Image: `ghcr.io/YOUR_ORG/bob4q-mcp:latest`
