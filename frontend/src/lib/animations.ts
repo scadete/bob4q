@@ -1,4 +1,5 @@
 import type { ComponentType } from "react";
+import { QubitAnimation } from "@/components/animations/QubitAnimation";
 
 /**
  * bob4q animation registry.
@@ -15,7 +16,9 @@ import type { ComponentType } from "react";
 export type AnimationName = "qubit" | "superposition" | "entanglement";
 
 // Populated as each animation component is implemented and approved.
-export const animations: Partial<Record<AnimationName, ComponentType>> = {};
+export const animations: Partial<Record<AnimationName, ComponentType>> = {
+  qubit: QubitAnimation,
+};
 
 export function getAnimation(name: AnimationName): ComponentType | undefined {
   return animations[name];
