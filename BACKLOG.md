@@ -23,11 +23,10 @@ Items are **ready** when all unknowns are resolved and acceptance criteria are c
 | LAB-04 | Notebook 2 — First Circuit with IBM Bob | `needs-info` | **P2** | LAB-03, INFRA-03 |
 | LAB-05 | Notebook 3 — Simulator vs Real QPU | `needs-info` | **P2** | LAB-03, INFRA-02 |
 | DEMO-01 | Demo route scaffold (`/demo`) | `done` | **P1** | INFRA-01 |
-| DEMO-02 | Slide content — Quantum Fundamentals deck | `done` | **P2** | DEMO-01, MANIM-01, MANIM-02, MANIM-03 |
-| MANIM-01 | Qubit / Bloch sphere scene | `done` | **P1** | — |
-| MANIM-02 | Superposition scene | `done` | **P2** | MANIM-01 |
-| MANIM-03 | Entanglement / Bell state scene | `done` | **P2** | MANIM-01 |
-| MANIM-04 | Render-all script | `done` | **P2** | MANIM-01 |
+| DEMO-02 | Slide content — Quantum Fundamentals deck | `needs-info` | **P2** | DEMO-01, ANIM-01, ANIM-02, ANIM-03 |
+| ANIM-01 | Qubit / Bloch sphere animation (CSS/JS) | `needs-validation` | **P1** | — |
+| ANIM-02 | Superposition animation (CSS/JS) | `needs-validation` | **P2** | ANIM-01 |
+| ANIM-03 | Entanglement / Bell state animation (CSS/JS) | `needs-validation` | **P2** | ANIM-01 |
 | DOCS-01 | Documentation route in Next.js | `done` | **P2** | INFRA-01 |
 | DOCS-02 | IBM Bob setup guide (pt-BR + Ollama) | `done` | **P2** | INFRA-04 |
 | DOCS-03 | Workshop landing page (`/`) | `done` | **P2** | INFRA-01 |
@@ -176,58 +175,55 @@ Items are **ready** when all unknowns are resolved and acceptance criteria are c
 - Full-screen Carbon `g100` layout, zero navigation chrome
 - URL-driven slide state: `/demo?slide=N` (N is 1-indexed)
 - Keyboard navigation: `ArrowRight` / `ArrowLeft`; `F` for native fullscreen API
-- `slides` config array: `{ title, body, animation?: string, component?: ReactNode }`
+- `slides` config array: `{ title, body, animation?: AnimationName, component?: ReactNode }`
 - **AC:** Navigating with arrow keys changes slide; URL updates; direct link to slide N works; fullscreen toggle works
 
 ---
 
 ### DEMO-02 · Slide content — Quantum Fundamentals deck
-**Status:** `needs-info` · **Priority:** `P2` · **Depends on:** DEMO-01, MANIM-01, MANIM-02, MANIM-03
-**Scope:** `frontend/src/app/demo/slides/`
+**Status:** `needs-info` · **Priority:** `P2` · **Depends on:** DEMO-01, ANIM-01, ANIM-02, ANIM-03
+**Scope:** `frontend/src/app/[locale]/demo/page.tsx`
 - Slide 1: Title / agenda
-- Slide 2: What is a qubit? (embed `qubit.mp4`)
-- Slide 3: Superposition (embed `superposition.mp4`)
-- Slide 4: Entanglement (embed `entanglement.mp4`)
+- Slide 2: What is a qubit? (`qubit` animation component)
+- Slide 3: Superposition (`superposition` animation component)
+- Slide 4: Entanglement (`entanglement` animation component)
 - Slide 5: IBM Bob + Qiskit workflow diagram
 - Slide 6: Live demo handoff → open `/lab`
-- **AC:** Full deck navigable; all Manim videos play inline; no Carbon token violations
+- **AC:** Full deck navigable; animations render inline; no Carbon token violations
 
 ---
 
-## MANIM — Animations
+## ANIM — CSS/JS Animations
 
-### MANIM-01 · Qubit / Bloch sphere scene
-**Status:** `ready` · **Priority:** `P1` · **Depends on:** —
-**Scope:** `manim/scenes/qubit.py`
-- Complete the stubbed `QubitScene` — animate a Bloch sphere showing `|0⟩ → superposition → |1⟩`
-- Render at `-qh`; copy to `frontend/public/videos/qubit.mp4`
-- Register in `frontend/src/lib/animations.ts`
-- **AC:** `uv run manim render scenes/qubit.py QubitScene -qh` produces an `.mp4`; video plays in browser
+> Animations are **CSS/JS React components**, not rendered Manim video. The
+> `manim/scenes/*.py` files are the visual reference spec. **Validate each
+> animation's concept with the user before implementing it.** Register each
+> component in `frontend/src/lib/animations.ts` (keyed by `AnimationName`).
+> (Supersedes the former MANIM-01..04 render tasks; `scripts/render-all.*` and
+> `frontend/public/videos/` removed.)
 
----
-
-### MANIM-02 · Superposition scene
-**Status:** `ready` · **Priority:** `P2` · **Depends on:** MANIM-01
-**Scope:** `manim/scenes/superposition.py`
-- Animate coin analogy → probability amplitude → H gate on Bloch sphere
-- **AC:** Scene renders and is registered in `animations.ts`
+### ANIM-01 · Qubit / Bloch sphere animation
+**Status:** `needs-validation` · **Priority:** `P1` · **Depends on:** —
+**Scope:** `frontend/src/components/animations/` · reference: `manim/scenes/qubit.py`
+- Reproduce `QubitScene` as CSS/JS: Bloch sphere showing `|0⟩ → superposition → |1⟩`
+- Register under `qubit` in `animations.ts`
+- **AC:** concept approved by user; renders in the `/demo` qubit slide; respects `prefers-reduced-motion`
 
 ---
 
-### MANIM-03 · Entanglement / Bell state scene
-**Status:** `ready` · **Priority:** `P2` · **Depends on:** MANIM-01
-**Scope:** `manim/scenes/entanglement.py`
-- Animate two qubits, CNOT gate, Bell state measurement correlation
-- **AC:** Scene renders and is registered in `animations.ts`
+### ANIM-02 · Superposition animation
+**Status:** `needs-validation` · **Priority:** `P2` · **Depends on:** ANIM-01
+**Scope:** `frontend/src/components/animations/` · reference: `manim/scenes/superposition.py`
+- Coin analogy → probability amplitude → H gate on the Bloch sphere
+- **AC:** concept approved; registered under `superposition` in `animations.ts`
 
 ---
 
-### MANIM-04 · Render-all script
-**Status:** `ready` · **Priority:** `P2` · **Depends on:** MANIM-01
-**Scope:** `scripts/render-all.sh` + `scripts/render-all.ps1`
-- Loop over all scenes in `manim/scenes/`, render at `-qh`, copy to `frontend/public/videos/`
-- Windows PowerShell equivalent
-- **AC:** Running the script from repo root produces all `.mp4` files in `frontend/public/videos/`
+### ANIM-03 · Entanglement / Bell state animation
+**Status:** `needs-validation` · **Priority:** `P2` · **Depends on:** ANIM-01
+**Scope:** `frontend/src/components/animations/` · reference: `manim/scenes/entanglement.py`
+- Two qubits, CNOT gate, Bell state measurement correlation
+- **AC:** concept approved; registered under `entanglement` in `animations.ts`
 
 ---
 

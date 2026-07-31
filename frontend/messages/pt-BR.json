@@ -39,6 +39,7 @@
     "prev": "Anterior",
     "next": "Próximo",
     "fullscreen": "Tela cheia",
-    "slide_counter": "Slide {current} de {total}"
+    "slide_counter": "Slide {current} de {total}",
+    "animation_pending": "Animação em breve: {scene}"
   }
 }

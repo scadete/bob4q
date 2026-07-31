@@ -15,7 +15,7 @@
 
 ### Frontend
 - Import Carbon components from `@carbon/react` only — NEVER `carbon-components-react`
-- Animation component `<QuantumAnimation>` expects `sceneName` which maps via `frontend/src/lib/animations.ts` — update that file when adding Manim scenes
+- Animations are CSS/JS React components registered in `frontend/src/lib/animations.ts` (keyed by `AnimationName`) — NOT rendered video; `manim/scenes/*.py` is the reference spec. Validate each animation's concept with the user before building it.
 - `next-intl` namespaces are top-level keys in `frontend/messages/{locale}.json` — add to ALL locale files simultaneously
 - No default exports except Next.js page/layout files
 
@@ -23,9 +23,9 @@
 - Each of `mcp-server/`, `backend/`, `manim/` has isolated `uv` env — never run `uv` from repo root for these
 - Use `ruff check . && ruff format .` before committing Python — configured per-package
 
-### Manim
-- Render with `-ql` (low quality) during dev, `-qh` only for final assets
-- Output path must be copied to `frontend/public/videos/` — automate via `scripts/render-all.sh`
+### Animations
+- CSS/JS React components only — no Manim render, no video files
+- `manim/scenes/*.py` are read as the visual reference spec; register components in `frontend/src/lib/animations.ts`
 
 ### Testing
 - Python: `uv run pytest tests/test_specific.py` from the package directory

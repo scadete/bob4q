@@ -7,11 +7,13 @@ import Link from "next/link";
 import { Button } from "@carbon/react";
 import { ChevronLeft, ChevronRight, Home, Maximize } from "@carbon/icons-react";
 import type { ReactNode } from "react";
+import { getAnimation, type AnimationName } from "@/lib/animations";
 
 export interface Slide {
   title: string;
   body?: string;
-  animation?: string;
+  /** Scene to render as a CSS/JS animation component (see lib/animations.ts). */
+  animation?: AnimationName;
   component?: ReactNode;
 }
 
@@ -78,21 +80,36 @@ export default function SlideShow({ slides }: SlideShowProps) {
           textAlign: "center",
         }}
       >
-        {slide.animation && (
-          <video
-            key={slide.animation}
-            src={slide.animation}
-            autoPlay
-            muted
-            loop
-            style={{
-              maxHeight: "50vh",
-              maxWidth: "100%",
-              marginBottom: "2rem",
-              borderRadius: "4px",
-            }}
-          />
-        )}
+        {slide.animation &&
+          (() => {
+            const Animation = getAnimation(slide.animation);
+            if (Animation) {
+              return (
+                <div style={{ marginBottom: "2rem" }}>
+                  <Animation />
+                </div>
+              );
+            }
+            // Animation not built yet — keep the slide usable with a placeholder.
+            return (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: "40vh",
+                  width: "min(640px, 100%)",
+                  marginBottom: "2rem",
+                  border: "1px dashed var(--cds-border-subtle)",
+                  borderRadius: "4px",
+                  color: "var(--cds-text-helper)",
+                  fontSize: "0.875rem",
+                }}
+              >
+                {t("animation_pending").replace("{scene}", slide.animation)}
+              </div>
+            );
+          })()}
         {slide.component}
         <h1
           style={{

@@ -7,7 +7,7 @@
 A full-stack, workshop-ready environment where participants learn quantum computing concepts through:
 - **IBM Bob** AI assistance (Qiskit Code Assistant, local model)
 - **Interactive circuits** built and executed live
-- **Visual explanations** powered by [Manim](https://github.com/3b1b/manim) animations
+- **Visual explanations** as lightweight CSS/JS animations (modeled on [Manim](https://github.com/3b1b/manim) scenes, not rendered video)
 - **IBM Carbon Design System** UI — dark-themed, presentation-grade
 - **i18n docs** (English + pt-BR) ready for global workshops
 
@@ -45,7 +45,7 @@ bob4q/
 ├── frontend/        # Next.js 14 + Carbon Design System
 ├── backend/         # FastAPI — circuit execution API
 ├── mcp-server/      # Qiskit MCP server (stdio + HTTP)
-├── manim/           # Animation scenes (pre-rendered)
+├── manim/           # Animation scenes (Python) — reference spec for CSS/JS animations
 ├── docs/            # Workshop documentation (i18n Markdown)
 │   └── i18n/
 │       ├── en/
@@ -80,7 +80,7 @@ See [`docs/i18n/en/bob-setup.md`](docs/i18n/en/bob-setup.md) for configuration i
 | | |
 |---|---|
 | Frontend | Next.js 14, TypeScript, `@carbon/react` |
-| Animations | Manim (Python) — pre-rendered |
+| Animations | CSS/JS React components (Manim scenes as reference) |
 | Backend | FastAPI, Python 3.11+ |
 | MCP Server | Python MCP, Qiskit, local LLM |
 | i18n (UI) | next-intl |

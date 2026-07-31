@@ -7,20 +7,19 @@ Workshop Participant
        │
        ▼
   [Browser]
-  Next.js frontend (Carbon DS)
+  Next.js frontend (Carbon DS + CSS/JS animations)
        │
   ┌────┴──────────────┐
   │                   │
   ▼                   ▼
 [FastAPI backend]  [next-intl]
   /api/circuit       i18n UI
-  /api/render
        │
   ┌────┴──────────────┐
   │                   │
   ▼                   ▼
-[Qiskit]       [Manim render]
-[MCP server]   (pre-render or on-demand)
+[Qiskit]
+[MCP server]
   stdio/HTTP
        │
   ┌────┴──────────────┐
@@ -39,10 +38,10 @@ Workshop Participant
 5. Result (counts, statevector) returned as JSON → visualized in frontend
 
 ## Data Flow — Animation
-1. Content author writes Manim scene in `manim/scenes/`
-2. CI or `scripts/render-all.sh` renders to `frontend/public/videos/`
-3. Committed to repo (or CDN upload for prod)
-4. Frontend `<QuantumAnimation>` serves via `<video>`
+1. A `manim/scenes/*.py` file documents what the animation should depict (reference spec)
+2. Its concept is validated with the user, then reimplemented as a CSS/JS React component
+3. The component is registered in `frontend/src/lib/animations.ts` (keyed by `AnimationName`)
+4. `SlideShow` renders it client-side by the slide's `animation` key — no video, no backend
 
 ## Deployment Modes
 | Mode | OS | How | MCP transport |
@@ -61,5 +60,5 @@ Workshop Participant
 
 ## Constraints
 - Qiskit Code Assistant CANNOT be called via cloud — local model only
-- Manim MUST be pre-rendered for production (runtime render too slow for demo)
+- Animations are CSS/JS components (no Manim render, no video); `manim/scenes/*.py` is reference-only
 - Carbon DS tokens MUST be used — no custom theming that breaks Carbon's accessibility

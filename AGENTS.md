@@ -9,8 +9,8 @@ This file provides guidance to agents when working with code in this repository.
 | Layer | Tech |
 |---|---|
 | Frontend | Next.js 14 (App Router) + Carbon Design System (`@carbon/react`) |
-| Math/Animations | Manim (Python) — pre-rendered to video/SVG, served statically |
-| Backend/API | FastAPI (Python) — quantum circuit execution, Manim render jobs |
+| Math/Animations | CSS/JS React components (Manim scenes in `manim/` are the reference spec, not rendered) |
+| Backend/API | FastAPI (Python) — quantum circuit execution |
 | MCP Server | Custom Python MCP server wrapping Qiskit — runnable locally or in Podman |
 | i18n | `next-intl` — locale files in `frontend/messages/{locale}.json` |
 | Package mgr (JS) | pnpm (workspaces) |
@@ -42,12 +42,12 @@ uv run pytest                      # all tests
 uv run pytest tests/test_foo.py    # single test
 ```
 
-### Manim (run from `manim/`)
-```bash
-uv run manim render scenes/qubit.py QubitScene -ql  # low quality (fast, dev)
-uv run manim render scenes/qubit.py QubitScene -qh  # high quality (prod)
-# Output → manim/media/videos/ — copy to frontend/public/videos/
-```
+### Animations
+Animations are **CSS/JS React components**, not rendered Manim video. The
+`manim/scenes/*.py` files are the reference spec for what each animation depicts
+(read them, don't render them). Build/register components in
+`frontend/src/lib/animations.ts`. Validate each animation's concept with the
+user before implementing it.
 
 ### Notebooks (run locally from repo root)
 ```bash
@@ -81,11 +81,15 @@ Notebooks in `notebooks/` are **run locally** by developers (not in the browser)
 ### MCP Server transport duality
 `mcp-server/server.py` supports `--http` flag → switches from stdio (local Bob integration) to HTTP SSE (remote/demo). Bob config differs per mode — see `docs/setup/bob-config.md`.
 
-### Manim → Frontend pipeline
-Manim videos are **pre-rendered** (not on-the-fly). Render → copy to `frontend/public/videos/`. The `<QuantumAnimation>` component in `frontend/src/components/` takes a `sceneName` prop that maps to filenames via `frontend/src/lib/animations.ts`.
+### Animations → Frontend
+No video pipeline. Each scene is a CSS/JS React component registered in
+`frontend/src/lib/animations.ts` (`animations` map, keyed by `AnimationName`).
+`SlideShow` looks up the component by the slide's `animation` key and renders it
+(showing a placeholder for names not yet built). The `manim/scenes/*.py` files
+are the visual reference only.
 
 ### Carbon Design System
-Always import from `@carbon/react`, never `carbon-components-react`. Use Carbon tokens for all colors/spacing — no hardcoded hex values except in Manim Python code.
+Always import from `@carbon/react`, never `carbon-components-react`. Use Carbon tokens for all colors/spacing — no hardcoded hex values.
 
 ### i18n — two separate systems
 - `frontend/messages/` → Next.js UI strings (via `next-intl`)

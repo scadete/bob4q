@@ -17,8 +17,8 @@
 - `scripts/setup-docker.sh` (POSIX) or `scripts/setup-container.ps1` (Windows) for container path
 
 ## Workshop Modules (half-day scope — 2–3 modules)
-1. **Quantum Fundamentals** — qubits, superposition, entanglement (Manim + slides)
-2. **First Circuit with IBM Bob** — Qiskit in JupyterLite, Bob assistance via MCP
+1. **Quantum Fundamentals** — qubits, superposition, entanglement (CSS/JS animations + slides)
+2. **First Circuit with IBM Bob** — Qiskit run locally in Jupyter, Bob assistance via MCP
 3. **Simulator vs Real QPU** — run in Aer (browser), escalate to IBM Quantum via "Run on QPU" button
 
 > Modules 4–5 (results visualization, variational algorithms) are backlogged for future workshops.
@@ -71,7 +71,7 @@ Full Aer / real QPU → FastAPI backend via "Run on QPU" button.
 
 ## Demo Route
 - `/demo` = full-screen Carbon slideshow for facilitator
-- Embeds Manim animation videos at key concept moments
+- Renders CSS/JS animations at key concept moments
 - Facilitator navigates with keyboard; participants watch on projector
 
 ## Documentation i18n
@@ -82,7 +82,7 @@ Full Aer / real QPU → FastAPI backend via "Run on QPU" button.
 
 ## Content Principles
 - Explanatory first — every code sample has a prose explanation
-- Manim animation precedes code introduction (visual → concrete)
+- Animation (CSS/JS) precedes code introduction (visual → concrete)
 - IBM Bob interactions shown as annotated screenshots or live demo
 - No jargon without definition
 

@@ -20,27 +20,25 @@
 - Use `useTranslations('namespace')` hook — namespaces map to top-level JSON keys
 
 ## Animation Integration
-- Manim renders → `frontend/public/videos/{sceneName}.mp4`
-- Component `<QuantumAnimation sceneName="...">` wraps `<video>` with Carbon styling
-- Scene name → file mapping in `frontend/src/lib/animations.ts`
+- Animations are **CSS/JS React components**, not video (`manim/scenes/*.py` = reference spec)
+- Registry in `frontend/src/lib/animations.ts`: `animations` map keyed by `AnimationName`
+- `SlideShow` looks up the component by the slide's `animation` key; unregistered names render a placeholder
+- Validate each animation's concept with the user before building it
 
 ## Routing
 - `/` → workshop home / landing
-- `/lab` → JupyterLite iframe (full-page embed, zero-install)
+- `/lab` → notebook index; `/lab/[slug]` → read-only notebook reader (JupyterLite removed)
 - `/docs/[locale]/[slug]` → workshop documentation (Markdown rendered)
-- `/demo` → presenter slideshow (full-screen Carbon layout, keyboard navigation, Manim videos embedded)
+- `/demo` → presenter slideshow (full-screen Carbon layout, keyboard navigation, CSS/JS animations)
 
-## JupyterLite Embed
-- Served as `<iframe src="/jupyterlite/index.html">` — JupyterLite built assets in `frontend/public/jupyterlite/`
-- Notebooks served from `notebooks/` directory (copied into JupyterLite content at build time)
-- "Run on QPU" button lives outside the iframe (in the parent Next.js page), calls FastAPI directly
+## Notebook Presentation (`/lab`)
+- Read-only: `frontend/src/lib/notebooks.ts` is the registry + loader (reads `../notebooks/*.ipynb`)
+- Renders markdown cells (KaTeX) + code cells as `<pre>`; a "Run locally" panel shows the `uv run … jupyter lab` command
+- Notebooks are run locally by developers, not in the browser
 
 ## Demo Route (`/demo`)
-- Full-screen Carbon `g100` layout, no navigation chrome
+- Full-screen Carbon `g100` layout, minimal chrome (Home button in the control bar)
 - Slide state in URL (`/demo?slide=3`) so facilitator can deep-link
 - Keyboard: ArrowRight/ArrowLeft to navigate; `F` for fullscreen
-- Each slide can embed a Manim `<video>` or a Carbon data viz component
-
-## Open Questions
-- [ ] Qiskit Aer-wasm availability in JupyterLite — verify before building lab module
+- Each slide can render a CSS/JS animation component or a Carbon data viz component
 - [ ] JupyterLite build step: integrate into `pnpm build` or separate script?

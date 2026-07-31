@@ -4,11 +4,11 @@
 
 ### Hard constraints
 - Qiskit Code Assistant = local model ONLY → any feature requiring it must account for cold-start latency (~5-30s model load)
-- Manim = pre-render ONLY for production → no on-demand rendering in live demo path
+- Animations = CSS/JS React components (no Manim render, no video); `manim/scenes/*.py` is reference-only. Validate each animation concept with the user before building it.
 - MCP server MUST support both stdio (Bob local) AND HTTP SSE (container/remote) — these are not separate codebases
 
 ### Coupling to watch
-- Adding a Manim scene requires: new `.py` file in `manim/scenes/` + entry in `frontend/src/lib/animations.ts` + render + copy to `frontend/public/videos/` — all four steps are coupled
+- Adding an animation requires: a CSS/JS React component + an entry in `frontend/src/lib/animations.ts` (optionally a `manim/scenes/*.py` reference) — no render/copy step
 - New MCP tool requires: `server.py` registration + FastAPI backend endpoint that invokes it + frontend lab UI binding
 - New workshop module requires: docs in BOTH `docs/i18n/en/` AND `docs/i18n/pt-BR/` + route in Next.js + navigation update
 
@@ -28,5 +28,5 @@
 - Starting locales: `en`, `pt-BR` — design routing to make adding new locales zero-code
 
 ### Performance
-- Manim video files can be large — plan for CDN or compression before workshop scale
+- Animations are CSS/JS components (no video payloads) — keep them GPU-friendly (transform/opacity) and respect `prefers-reduced-motion`
 - Qiskit simulator is fast; real QPU adds queue latency — UI must handle async job polling

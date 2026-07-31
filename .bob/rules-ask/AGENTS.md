@@ -14,7 +14,7 @@
 - Both do the same thing — local setup and container setup
 
 ### Counterintuitive structure
-- `manim/` contains Python animation source — output is pre-rendered video, NOT runtime rendering
+- `manim/` contains Python animation source used as a **reference spec** — animations are reimplemented as CSS/JS React components, NOT rendered to video
 - `docs/i18n/` is workshop Markdown documentation, separate from `frontend/messages/` which is UI strings
 - MCP server is NOT a standard REST API — it uses MCP protocol (stdio or HTTP SSE), not regular HTTP JSON
 

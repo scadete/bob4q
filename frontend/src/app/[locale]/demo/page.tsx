@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import SlideShow from "@/components/SlideShow";
 import type { Slide } from "@/components/SlideShow";
-import { getAnimationUrl } from "@/lib/animations";
 import Link from "next/link";
 import { Button } from "@carbon/react";
 
@@ -13,17 +12,17 @@ const slides: Slide[] = [
   {
     title: "What is a Qubit?",
     body: "A qubit is the fundamental unit of quantum information. Unlike a classical bit, it can exist in a superposition of 0 and 1 simultaneously.",
-    animation: getAnimationUrl("qubit"),
+    animation: "qubit",
   },
   {
     title: "Superposition",
     body: "Applying a Hadamard gate puts a qubit into equal superposition — equal probability of measuring 0 or 1.",
-    animation: getAnimationUrl("superposition"),
+    animation: "superposition",
   },
   {
     title: "Entanglement",
     body: "Two entangled qubits share a quantum state — measuring one instantly determines the other, regardless of distance.",
-    animation: getAnimationUrl("entanglement"),
+    animation: "entanglement",
   },
   {
     title: "IBM Bob + Qiskit Workflow",

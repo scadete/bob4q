@@ -39,6 +39,7 @@
     "prev": "Previous",
     "next": "Next",
     "fullscreen": "Fullscreen",
-    "slide_counter": "Slide {current} of {total}"
+    "slide_counter": "Slide {current} of {total}",
+    "animation_pending": "Animation coming soon: {scene}"
   }
 }
