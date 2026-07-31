@@ -9,54 +9,60 @@ import {
   makeCamera,
   mixColor,
   parseColor,
-  rotZ,
+  rotAxis,
   type Camera,
   type Vec3,
 } from "./bloch";
 
 /**
- * ANIM-01 — Qubit / Bloch sphere.
+ * ANIM-01 — Gates as Bloch-sphere rotations: H → Z → H.
  *
- * CSS/JS reimplementation of manim/scenes/qubit.py (QubitScene), rendered with
- * a tiny custom 3D projection (see ./bloch). The state vector is a true 3D unit
- * vector; the Hadamard is one clean rotation of it (|0⟩ pole → |+⟩ equator),
- * followed by measurement collapse to |1⟩. The 3D look comes from a fixed
- * camera, so there is no coupled screen-axis motion.
+ * Rendered with a tiny custom 3D projection (see ./bloch). Each gate is the
+ * real rotation of the 3D state vector:
+ *   H = 180° about (X+Z)/√2 (a genuinely two-axis tilt, out of the screen plane)
+ *   Z = 180° about the pole axis
+ * Starting from |0⟩: H → |+⟩, Z → |−⟩, H → |1⟩. So H·Z·H = X (a bit flip).
  *
- * Honors `prefers-reduced-motion`: renders a static |+⟩ frame instead of
- * animating.
+ * Honors `prefers-reduced-motion`: renders a static |+⟩ frame.
  */
 
-// θ (deg) about the Z axis over one loop: |0⟩(0) → |+⟩(-90) → |1⟩(-180) → reset.
-const THETA_KEYS: [number, number][] = [
-  [0, 0], [0.1, 0], [0.3, -90], [0.48, -90], [0.66, -180], [0.84, -180], [1, -360],
+// Bloch directions (X = right/|+⟩, Y = up/|0⟩ pole, Z = toward viewer).
+const S0: Vec3 = [0, 1, 0]; // |0⟩
+const SP: Vec3 = [1, 0, 0]; // |+⟩
+const SM: Vec3 = [-1, 0, 0]; // |−⟩
+const S1: Vec3 = [0, -1, 0]; // |1⟩
+const H_AXIS: Vec3 = [1, 1, 0]; // (X+Z)/√2 in these coords → normalized in rotAxis
+const Z_AXIS: Vec3 = [0, 1, 0]; // pole axis
+
+type Seg =
+  | { t0: number; t1: number; kind: "hold"; state: Vec3; caption: string }
+  | { t0: number; t1: number; kind: "gate"; from: Vec3; axis: Vec3; angle: number; gate: string; caption: string };
+
+const SEGMENTS: Seg[] = [
+  { t0: 0.0, t1: 0.06, kind: "hold", state: S0, caption: "|0⟩ — start" },
+  { t0: 0.06, t1: 0.24, kind: "gate", from: S0, axis: H_AXIS, angle: 180, gate: "H", caption: "H gate: |0⟩ → |+⟩" },
+  { t0: 0.24, t1: 0.34, kind: "hold", state: SP, caption: "|+⟩ superposition" },
+  { t0: 0.34, t1: 0.52, kind: "gate", from: SP, axis: Z_AXIS, angle: -180, gate: "Z", caption: "Z gate: |+⟩ → |−⟩" },
+  { t0: 0.52, t1: 0.62, kind: "hold", state: SM, caption: "|−⟩" },
+  { t0: 0.62, t1: 0.8, kind: "gate", from: SM, axis: H_AXIS, angle: 180, gate: "H", caption: "H gate: |−⟩ → |1⟩" },
+  { t0: 0.8, t1: 1.0, kind: "hold", state: S1, caption: "H·Z·H = X  →  |1⟩" },
 ];
-const STATIC_T = 0.3; // reduced-motion frame = superposition
+const STATIC_T = 0.28; // reduced-motion frame = |+⟩
 
 const smoothstep = (u: number) => u * u * (3 - 2 * u);
+const segAt = (t: number) => SEGMENTS.find((s) => t >= s.t0 && t < s.t1) ?? SEGMENTS[SEGMENTS.length - 1];
 
-function interp(keys: [number, number][], t: number): number {
-  for (let i = 0; i < keys.length - 1; i++) {
-    const [t0, v0] = keys[i];
-    const [t1, v1] = keys[i + 1];
-    if (t <= t1) return v0 + (v1 - v0) * smoothstep((t - t0) / (t1 - t0));
-  }
-  return keys[keys.length - 1][1];
-}
-
-/** Trapezoid ramp: 0 before a, 0→1 [a,b], 1 [b,c], 1→0 [c,d], 0 after. */
-function ramp(t: number, a: number, b: number, c: number, d: number): number {
-  if (t < a || t > d) return 0;
-  if (t < b) return (t - a) / (b - a || 1);
-  if (t <= c) return 1;
-  return 1 - (t - c) / (d - c || 1);
+/** Loop-reset fade: fade in at the very start, fade out over the last stretch. */
+function vectorAlpha(t: number): number {
+  if (t < 0.05) return t / 0.05;
+  if (t > 0.9) return Math.max(0, 1 - (t - 0.9) / 0.1);
+  return 1;
 }
 
 export function QubitAnimation() {
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const barsRef = useRef<HTMLDivElement>(null);
-  const capRefs = [useRef<HTMLSpanElement>(null), useRef<HTMLSpanElement>(null), useRef<HTMLSpanElement>(null)];
+  const captionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -65,20 +71,21 @@ export function QubitAnimation() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Resolve Carbon tokens to concrete colors for the canvas.
     const cs = getComputedStyle(canvas);
-    const tok = (name: string, fallback: string) => (cs.getPropertyValue(name).trim() || fallback);
+    const tok = (name: string, fallback: string) => cs.getPropertyValue(name).trim() || fallback;
     const colors = {
       silhouette: tok("--cds-border-strong", "#8d8d8d"),
       wire: tok("--cds-border-subtle", "#525252"),
       fillInner: tok("--cds-layer-02", "#393939"),
       fillOuter: tok("--cds-background", "#161616"),
-      text: tok("--cds-text-primary", "#f4f4f4"),
-      plus: tok("--cds-support-warning", "#f1c21b"),
+      text: tok("--cds-text-secondary", "#c6c6c6"),
+      badge: tok("--cds-text-primary", "#f4f4f4"),
+      badgeBg: tok("--cds-layer-01", "#262626"),
+      accent: tok("--cds-border-interactive", "#4589ff"),
     };
     const red = parseColor(tok("--cds-support-error", "#fa4d56"), [250, 77, 86]);
     const yellow = parseColor(tok("--cds-support-warning", "#f1c21b"), [241, 194, 27]);
-    const font = `13px 'IBM Plex Sans', system-ui, sans-serif`;
+    const font = "13px 'IBM Plex Sans', system-ui, sans-serif";
 
     let cam: Camera;
     const setup = () => {
@@ -88,7 +95,34 @@ export function QubitAnimation() {
       canvas.height = size * dpr;
       canvas.style.height = `${size}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      cam = makeCamera(-30, 16, size * 0.34, size / 2, size / 2);
+      cam = makeCamera(-28, 16, size * 0.34, size / 2, size / 2);
+    };
+
+    const drawBadge = (letter: string, alpha: number) => {
+      if (alpha <= 0) return;
+      const w = 26, h = 26, x = cam.cx - w / 2, y = 8;
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = colors.badgeBg;
+      ctx.strokeStyle = colors.accent;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.rect(x, y, w, h);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = colors.badge;
+      ctx.font = "bold 15px 'IBM Plex Sans', system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(letter, cam.cx, y + h / 2 + 1);
+      ctx.globalAlpha = 1;
+    };
+
+    let lastCaption = "";
+    const setCaption = (text: string) => {
+      if (captionRef.current && text !== lastCaption) {
+        captionRef.current.textContent = text;
+        lastCaption = text;
+      }
     };
 
     const draw = (t: number) => {
@@ -96,35 +130,37 @@ export function QubitAnimation() {
       ctx.clearRect(0, 0, size, size);
       drawSphere(ctx, cam, colors);
 
-      const theta = interp(THETA_KEYS, t);
-      const dir = apply(rotZ(theta), [0, 1, 0] as Vec3);
-      const equatorness = Math.sin((Math.abs(theta) * Math.PI) / 180); // 0 at poles, 1 at equator
-      drawVector(ctx, dir, cam, mixColor(red, yellow, equatorness));
+      const seg = segAt(t);
+      let dir: Vec3;
+      if (seg.kind === "hold") {
+        dir = seg.state;
+      } else {
+        const p = smoothstep((t - seg.t0) / (seg.t1 - seg.t0));
+        dir = apply(rotAxis(seg.axis, seg.angle * p), seg.from);
+      }
 
-      drawLabel(ctx, [0, 1, 0], cam, "|0⟩", colors.text, font);
-      drawLabel(ctx, [0, -1, 0], cam, "|1⟩", colors.text, font);
-      drawLabel(ctx, [1, 0, 0], cam, "|+⟩", colors.plus, font);
+      const equatorness = 1 - Math.abs(dir[1]); // 0 at poles → 1 at equator
+      drawVector(ctx, dir, cam, mixColor(red, yellow, equatorness), 2.5, vectorAlpha(t));
 
-      // DOM overlays driven directly (no React re-render per frame).
-      if (barsRef.current) barsRef.current.style.opacity = String(ramp(t, 0.24, 0.3, 0.46, 0.52));
-      const capWindows: [number, number, number, number][] = [
-        [0, 0, 0.14, 0.18],
-        [0.24, 0.3, 0.46, 0.5],
-        [0.58, 0.62, 0.82, 0.86],
-      ];
-      capRefs.forEach((ref, i) => {
-        if (ref.current) ref.current.style.opacity = String(ramp(t, ...capWindows[i]));
-      });
+      drawLabel(ctx, S0, cam, "|0⟩", colors.text, font);
+      drawLabel(ctx, S1, cam, "|1⟩", colors.text, font);
+      drawLabel(ctx, SP, cam, "|+⟩", colors.text, font);
+      drawLabel(ctx, SM, cam, "|−⟩", colors.text, font);
+
+      if (seg.kind === "gate") {
+        const p = (t - seg.t0) / (seg.t1 - seg.t0);
+        drawBadge(seg.gate, Math.min(1, Math.sin(p * Math.PI) * 1.6));
+      }
+      setCaption(seg.caption);
     };
 
     setup();
-
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let raf = 0;
     if (reduce) {
       draw(STATIC_T);
     } else {
-      const period = 9000;
+      const period = 11000;
       const start = performance.now();
       const loop = (now: number) => {
         const t = ((((now - start) % period) + period) % period) / period;
@@ -150,39 +186,17 @@ export function QubitAnimation() {
   return (
     <div
       role="img"
-      aria-label="A qubit state vector on a 3D Bloch sphere rotating from |0⟩ through superposition |+⟩ to |1⟩"
+      aria-label="A qubit state vector on a 3D Bloch sphere: a Hadamard, then a Z gate, then a Hadamard (H·Z·H = X), taking |0⟩ to |1⟩"
       style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.85rem", color: "var(--cds-text-primary)" }}
     >
       <div ref={stageRef} style={{ position: "relative", width: stageSize, aspectRatio: "1" }}>
         <canvas ref={canvasRef} style={{ width: "100%", display: "block" }} />
-        <div
-          ref={barsRef}
-          aria-hidden="true"
-          style={{ position: "absolute", top: "4%", right: "0", display: "flex", flexDirection: "column", gap: "6px", opacity: 0 }}
-        >
-          {(["0", "1"] as const).map((k) => (
-            <div key={k} style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.7rem", color: "var(--cds-text-secondary)" }}>
-              <span>|{k}⟩</span>
-              <span style={{ width: "54px", height: "8px", background: "var(--cds-layer-02, #393939)", borderRadius: "2px", overflow: "hidden", display: "block" }}>
-                <span style={{ display: "block", height: "100%", width: "50%", marginLeft: k === "1" ? "50%" : 0, background: k === "0" ? "var(--cds-support-info)" : "var(--cds-support-error)" }} />
-              </span>
-              <span>50%</span>
-            </div>
-          ))}
-        </div>
       </div>
-
-      <div style={{ position: "relative", height: "1.4rem", width: stageSize, textAlign: "center" }}>
-        <span ref={capRefs[0]} style={{ position: "absolute", inset: 0, fontSize: "0.9rem", color: "var(--cds-text-secondary)", opacity: 0 }}>
-          Classical bit — always |0⟩ or |1⟩
-        </span>
-        <span ref={capRefs[1]} style={{ position: "absolute", inset: 0, fontSize: "0.9rem", color: "var(--cds-text-secondary)", opacity: 0 }}>
-          H gate → superposition |+⟩
-        </span>
-        <span ref={capRefs[2]} style={{ position: "absolute", inset: 0, fontSize: "0.9rem", color: "var(--cds-text-secondary)", opacity: 0 }}>
-          Measurement collapses to |0⟩ or |1⟩
-        </span>
-      </div>
+      <div
+        ref={captionRef}
+        aria-hidden="true"
+        style={{ height: "1.4rem", width: stageSize, textAlign: "center", fontSize: "0.9rem", color: "var(--cds-text-secondary)" }}
+      />
     </div>
   );
 }

@@ -41,6 +41,19 @@ export function apply(m: Mat3, v: Vec3): Vec3 {
   ];
 }
 
+/** Rotation by `deg` about an arbitrary axis (Rodrigues). A quantum gate is
+ *  such a rotation of the Bloch vector — e.g. H is 180° about (X+Z)/√2. */
+export function rotAxis(axis: Vec3, deg: number): Mat3 {
+  const len = Math.hypot(axis[0], axis[1], axis[2]) || 1;
+  const x = axis[0] / len, y = axis[1] / len, z = axis[2] / len;
+  const c = Math.cos(rad(deg)), s = Math.sin(rad(deg)), t = 1 - c;
+  return [
+    t * x * x + c, t * x * y - s * z, t * x * z + s * y,
+    t * x * y + s * z, t * y * y + c, t * y * z - s * x,
+    t * x * z - s * y, t * y * z + s * x, t * z * z + c,
+  ];
+}
+
 export interface Camera {
   view: Mat3;
   radius: number;
@@ -124,9 +137,10 @@ export function drawVector(
   cam: Camera,
   color: string,
   width = 2.5,
+  alpha = 1,
 ) {
   const tip = project(dir, cam);
-  ctx.globalAlpha = tip.depth < 0 ? 0.4 : 1;
+  ctx.globalAlpha = (tip.depth < 0 ? 0.4 : 1) * alpha;
   ctx.strokeStyle = color;
   ctx.fillStyle = color;
 
