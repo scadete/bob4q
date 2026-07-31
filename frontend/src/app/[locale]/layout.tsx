@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
-import { Theme } from "@carbon/react";
+// Carbon Design System global styles (tokens, reset, component CSS).
+import "@carbon/styles/css/styles.css";
 // KaTeX styles for math rendered in docs and notebook markdown cells.
 import "katex/dist/katex.min.css";
 
@@ -21,9 +22,11 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
-      <body>
+      {/* g100 theme class at the body level so tokens apply to the whole page,
+          including the background (Carbon's reset styles <body>). */}
+      <body className="cds--g100">
         <NextIntlClientProvider messages={messages}>
-          <Theme theme="g100">{children}</Theme>
+          {children}
         </NextIntlClientProvider>
       </body>
     </html>
