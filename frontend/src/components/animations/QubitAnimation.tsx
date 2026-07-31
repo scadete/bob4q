@@ -1,160 +1,188 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import {
+  apply,
+  drawLabel,
+  drawSphere,
+  drawVector,
+  makeCamera,
+  mixColor,
+  parseColor,
+  rotZ,
+  type Camera,
+  type Vec3,
+} from "./bloch";
+
 /**
- * ANIM-01 — Qubit / Bloch sphere (3D).
+ * ANIM-01 — Qubit / Bloch sphere.
  *
- * CSS/JS reimplementation of manim/scenes/qubit.py (QubitScene). A slim state
- * vector on a shaded 3D Bloch sphere loops:
- *   |0⟩ (north pole) → Hadamard arcs it through 3D to the equator (|+⟩) →
- *   measurement tips it to |1⟩ (south pole) → reset.
+ * CSS/JS reimplementation of manim/scenes/qubit.py (QubitScene), rendered with
+ * a tiny custom 3D projection (see ./bloch). The state vector is a true 3D unit
+ * vector; the Hadamard is one clean rotation of it (|0⟩ pole → |+⟩ equator),
+ * followed by measurement collapse to |1⟩. The 3D look comes from a fixed
+ * camera, so there is no coupled screen-axis motion.
  *
- * The arc is a great circle whose plane is tilted toward the viewer
- * (rotateY(50deg) azimuth + rotateX(10deg) view tilt), so the sweep reads as
- * 3D and the vector stays visible (never foreshortens to a point). Pure CSS 3D
- * transforms under `perspective`; colors use Carbon tokens. With
- * `prefers-reduced-motion` the animation is disabled and a |+⟩ still-frame
- * (with 50/50 bars) is shown instead.
+ * Honors `prefers-reduced-motion`: renders a static |+⟩ frame instead of
+ * animating.
  */
 
-const css = `
-.qa-root {
-  --qa-dur: 9s;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.85rem;
-  color: var(--cds-text-primary);
-}
-.qa-stage { position: relative; width: min(340px, 80vw); aspect-ratio: 1; perspective: 720px; }
-.qa-ball { position: absolute; inset: 0; width: 100%; height: 100%; }
+// θ (deg) about the Z axis over one loop: |0⟩(0) → |+⟩(-90) → |1⟩(-180) → reset.
+const THETA_KEYS: [number, number][] = [
+  [0, 0], [0.1, 0], [0.3, -90], [0.48, -90], [0.66, -180], [0.84, -180], [1, -360],
+];
+const STATIC_T = 0.3; // reduced-motion frame = superposition
 
-/* Slim state vector: base pinned at the sphere centre, points up by default. */
-.qa-vec {
-  position: absolute;
-  left: 50%;
-  bottom: 50%;
-  margin-left: -1.5px;
-  width: 3px;
-  height: 40%;
-  border-radius: 2px;
-  background: currentColor;
-  transform-origin: 50% 100%;
-  /* Reduced-motion still-frame: |+⟩ on the equator (front-right). */
-  transform: rotateX(10deg) rotateY(50deg) rotateX(90deg);
-  color: var(--cds-support-warning);
-}
-.qa-vec::before {
-  content: "";
-  position: absolute;
-  top: -8px;
-  left: 50%;
-  margin-left: -4px;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-bottom: 8px solid currentColor;
-}
+const smoothstep = (u: number) => u * u * (3 - 2 * u);
 
-.qa-bars {
-  position: absolute; top: 8%; right: 1%;
-  display: flex; flex-direction: column; gap: 6px;
-  opacity: 1;
-}
-.qa-barRow { display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: var(--cds-text-secondary); }
-.qa-barTrack { width: 54px; height: 8px; background: var(--cds-layer-02, #393939); border-radius: 2px; overflow: hidden; }
-.qa-barFill { display: block; height: 100%; width: 50%; }
-.qa-barFill0 { background: var(--cds-support-info); }
-.qa-barFill1 { background: var(--cds-support-error); margin-left: 50%; }
-
-.qa-caption { position: relative; height: 1.4rem; width: min(340px, 80vw); text-align: center; }
-.qa-cap { position: absolute; inset: 0; font-size: 0.9rem; color: var(--cds-text-secondary); }
-.qa-cap1, .qa-cap3 { opacity: 0; }
-.qa-cap2 { opacity: 1; }
-
-@media (prefers-reduced-motion: no-preference) {
-  .qa-vec {
-    animation: qa-vec var(--qa-dur) infinite ease-in-out,
-               qa-veccolor var(--qa-dur) infinite ease-in-out;
+function interp(keys: [number, number][], t: number): number {
+  for (let i = 0; i < keys.length - 1; i++) {
+    const [t0, v0] = keys[i];
+    const [t1, v1] = keys[i + 1];
+    if (t <= t1) return v0 + (v1 - v0) * smoothstep((t - t0) / (t1 - t0));
   }
-  .qa-bars { animation: qa-bars var(--qa-dur) infinite ease-in-out; }
-  .qa-cap1 { animation: qa-cap1 var(--qa-dur) infinite; }
-  .qa-cap2 { animation: qa-cap2 var(--qa-dur) infinite; }
-  .qa-cap3 { animation: qa-cap3 var(--qa-dur) infinite; }
+  return keys[keys.length - 1][1];
 }
 
-/* Polar sweep on a viewer-tilted great circle: |0⟩ → |+⟩ → |1⟩ → reset. */
-@keyframes qa-vec {
-  0%, 8%    { transform: rotateX(10deg) rotateY(50deg) rotateX(0deg); }
-  30%, 46%  { transform: rotateX(10deg) rotateY(50deg) rotateX(90deg); }
-  68%, 84%  { transform: rotateX(10deg) rotateY(50deg) rotateX(180deg); }
-  100%      { transform: rotateX(10deg) rotateY(50deg) rotateX(360deg); }
+/** Trapezoid ramp: 0 before a, 0→1 [a,b], 1 [b,c], 1→0 [c,d], 0 after. */
+function ramp(t: number, a: number, b: number, c: number, d: number): number {
+  if (t < a || t > d) return 0;
+  if (t < b) return (t - a) / (b - a || 1);
+  if (t <= c) return 1;
+  return 1 - (t - c) / (d - c || 1);
 }
-@keyframes qa-veccolor {
-  0%, 8%    { color: var(--cds-support-error); }
-  30%, 46%  { color: var(--cds-support-warning); }
-  68%, 84%  { color: var(--cds-support-error); }
-  100%      { color: var(--cds-support-error); }
-}
-@keyframes qa-bars {
-  0%, 24%   { opacity: 0; }
-  30%, 46%  { opacity: 1; }
-  52%, 100% { opacity: 0; }
-}
-@keyframes qa-cap1 { 0%, 14% { opacity: 1; } 18%, 100% { opacity: 0; } }
-@keyframes qa-cap2 { 0%, 18% { opacity: 0; } 24%, 46% { opacity: 1; } 50%, 100% { opacity: 0; } }
-@keyframes qa-cap3 { 0%, 56% { opacity: 0; } 62%, 82% { opacity: 1; } 86%, 100% { opacity: 0; } }
-`;
 
 export function QubitAnimation() {
+  const stageRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const barsRef = useRef<HTMLDivElement>(null);
+  const capRefs = [useRef<HTMLSpanElement>(null), useRef<HTMLSpanElement>(null), useRef<HTMLSpanElement>(null)];
+
+  useEffect(() => {
+    const stage = stageRef.current;
+    const canvas = canvasRef.current;
+    if (!stage || !canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Resolve Carbon tokens to concrete colors for the canvas.
+    const cs = getComputedStyle(canvas);
+    const tok = (name: string, fallback: string) => (cs.getPropertyValue(name).trim() || fallback);
+    const colors = {
+      silhouette: tok("--cds-border-strong", "#8d8d8d"),
+      wire: tok("--cds-border-subtle", "#525252"),
+      fillInner: tok("--cds-layer-02", "#393939"),
+      fillOuter: tok("--cds-background", "#161616"),
+      text: tok("--cds-text-primary", "#f4f4f4"),
+      plus: tok("--cds-support-warning", "#f1c21b"),
+    };
+    const red = parseColor(tok("--cds-support-error", "#fa4d56"), [250, 77, 86]);
+    const yellow = parseColor(tok("--cds-support-warning", "#f1c21b"), [241, 194, 27]);
+    const font = `13px 'IBM Plex Sans', system-ui, sans-serif`;
+
+    let cam: Camera;
+    const setup = () => {
+      const size = stage.clientWidth;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = size * dpr;
+      canvas.height = size * dpr;
+      canvas.style.height = `${size}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cam = makeCamera(-30, 16, size * 0.34, size / 2, size / 2);
+    };
+
+    const draw = (t: number) => {
+      const size = cam.cx * 2;
+      ctx.clearRect(0, 0, size, size);
+      drawSphere(ctx, cam, colors);
+
+      const theta = interp(THETA_KEYS, t);
+      const dir = apply(rotZ(theta), [0, 1, 0] as Vec3);
+      const equatorness = Math.sin((Math.abs(theta) * Math.PI) / 180); // 0 at poles, 1 at equator
+      drawVector(ctx, dir, cam, mixColor(red, yellow, equatorness));
+
+      drawLabel(ctx, [0, 1, 0], cam, "|0⟩", colors.text, font);
+      drawLabel(ctx, [0, -1, 0], cam, "|1⟩", colors.text, font);
+      drawLabel(ctx, [1, 0, 0], cam, "|+⟩", colors.plus, font);
+
+      // DOM overlays driven directly (no React re-render per frame).
+      if (barsRef.current) barsRef.current.style.opacity = String(ramp(t, 0.24, 0.3, 0.46, 0.52));
+      const capWindows: [number, number, number, number][] = [
+        [0, 0, 0.14, 0.18],
+        [0.24, 0.3, 0.46, 0.5],
+        [0.58, 0.62, 0.82, 0.86],
+      ];
+      capRefs.forEach((ref, i) => {
+        if (ref.current) ref.current.style.opacity = String(ramp(t, ...capWindows[i]));
+      });
+    };
+
+    setup();
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let raf = 0;
+    if (reduce) {
+      draw(STATIC_T);
+    } else {
+      const period = 9000;
+      const start = performance.now();
+      const loop = (now: number) => {
+        const t = ((((now - start) % period) + period) % period) / period;
+        draw(t);
+        raf = requestAnimationFrame(loop);
+      };
+      raf = requestAnimationFrame(loop);
+    }
+
+    const onResize = () => {
+      setup();
+      if (reduce) draw(STATIC_T);
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", onResize);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const stageSize = "min(340px, 80vw)";
   return (
     <div
-      className="qa-root"
       role="img"
-      aria-label="A qubit state vector on a 3D Bloch sphere rotating from |0⟩ through superposition to |1⟩"
+      aria-label="A qubit state vector on a 3D Bloch sphere rotating from |0⟩ through superposition |+⟩ to |1⟩"
+      style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.85rem", color: "var(--cds-text-primary)" }}
     >
-      <div className="qa-stage">
-        {/* Shaded 3D Bloch sphere: gradient ball, equator + meridian, axis, labels */}
-        <svg className="qa-ball" viewBox="0 0 240 240" aria-hidden="true">
-          <defs>
-            <radialGradient id="qaBallShade" cx="38%" cy="30%" r="78%">
-              <stop offset="0%" stopColor="var(--cds-layer-02)" stopOpacity="0.9" />
-              <stop offset="65%" stopColor="var(--cds-layer-01)" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="var(--cds-background)" stopOpacity="0.1" />
-            </radialGradient>
-          </defs>
-          <line x1="120" y1="16" x2="120" y2="224" stroke="var(--cds-border-subtle)" strokeWidth="1" strokeOpacity="0.5" />
-          <circle cx="120" cy="120" r="90" fill="url(#qaBallShade)" stroke="var(--cds-border-strong)" strokeWidth="1.5" />
-          <ellipse cx="120" cy="120" rx="90" ry="28" fill="none" stroke="var(--cds-border-subtle)" strokeWidth="1" />
-          <ellipse cx="120" cy="120" rx="28" ry="90" fill="none" stroke="var(--cds-border-subtle)" strokeWidth="1" strokeOpacity="0.6" />
-          <text x="120" y="13" textAnchor="middle" fontSize="15" fill="var(--cds-text-primary)">|0⟩</text>
-          <text x="120" y="238" textAnchor="middle" fontSize="15" fill="var(--cds-text-primary)">|1⟩</text>
-          <text x="228" y="125" textAnchor="middle" fontSize="14" fill="var(--cds-support-warning)">|+⟩</text>
-        </svg>
-
-        {/* Slim rotating state vector (3D) */}
-        <div className="qa-vec" aria-hidden="true" />
-
-        {/* Measurement probabilities (visible during superposition) */}
-        <div className="qa-bars" aria-hidden="true">
-          <div className="qa-barRow">
-            <span>|0⟩</span>
-            <span className="qa-barTrack"><span className="qa-barFill qa-barFill0" /></span>
-            <span>50%</span>
-          </div>
-          <div className="qa-barRow">
-            <span>|1⟩</span>
-            <span className="qa-barTrack"><span className="qa-barFill qa-barFill1" /></span>
-            <span>50%</span>
-          </div>
+      <div ref={stageRef} style={{ position: "relative", width: stageSize, aspectRatio: "1" }}>
+        <canvas ref={canvasRef} style={{ width: "100%", display: "block" }} />
+        <div
+          ref={barsRef}
+          aria-hidden="true"
+          style={{ position: "absolute", top: "4%", right: "0", display: "flex", flexDirection: "column", gap: "6px", opacity: 0 }}
+        >
+          {(["0", "1"] as const).map((k) => (
+            <div key={k} style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.7rem", color: "var(--cds-text-secondary)" }}>
+              <span>|{k}⟩</span>
+              <span style={{ width: "54px", height: "8px", background: "var(--cds-layer-02, #393939)", borderRadius: "2px", overflow: "hidden", display: "block" }}>
+                <span style={{ display: "block", height: "100%", width: "50%", marginLeft: k === "1" ? "50%" : 0, background: k === "0" ? "var(--cds-support-info)" : "var(--cds-support-error)" }} />
+              </span>
+              <span>50%</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      <div className="qa-caption">
-        <span className="qa-cap qa-cap1">Classical bit — always |0⟩ or |1⟩</span>
-        <span className="qa-cap qa-cap2">H gate → superposition on the equator</span>
-        <span className="qa-cap qa-cap3">Measurement collapses to |0⟩ or |1⟩</span>
+      <div style={{ position: "relative", height: "1.4rem", width: stageSize, textAlign: "center" }}>
+        <span ref={capRefs[0]} style={{ position: "absolute", inset: 0, fontSize: "0.9rem", color: "var(--cds-text-secondary)", opacity: 0 }}>
+          Classical bit — always |0⟩ or |1⟩
+        </span>
+        <span ref={capRefs[1]} style={{ position: "absolute", inset: 0, fontSize: "0.9rem", color: "var(--cds-text-secondary)", opacity: 0 }}>
+          H gate → superposition |+⟩
+        </span>
+        <span ref={capRefs[2]} style={{ position: "absolute", inset: 0, fontSize: "0.9rem", color: "var(--cds-text-secondary)", opacity: 0 }}>
+          Measurement collapses to |0⟩ or |1⟩
+        </span>
       </div>
-
-      <style>{css}</style>
     </div>
   );
 }
