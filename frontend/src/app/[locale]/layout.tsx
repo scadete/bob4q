@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
+// Self-hosted IBM Plex @font-face declarations (must load before Carbon so
+// its 'IBM Plex Sans'/'IBM Plex Mono' font-family stacks resolve to our files).
+import "./fonts.css";
 // Carbon Design System global styles (tokens, reset, component CSS).
 import "@carbon/styles/css/styles.css";
 // KaTeX styles for math rendered in docs and notebook markdown cells.

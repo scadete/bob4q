@@ -28,7 +28,7 @@
     "index_intro": "Browse the workshop notebooks below. Each one runs locally in Jupyter — open the file at the path shown, or use the launch command inside.",
     "run_locally": "Run it locally",
     "run_hint": "This notebook lives in the repository at",
-    "back": "← All notebooks",
+    "back": "All notebooks",
     "not_found": "Notebook not found."
   },
   "docs": {

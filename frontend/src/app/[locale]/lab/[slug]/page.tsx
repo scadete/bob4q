@@ -32,14 +32,36 @@ export default async function NotebookPage({
   params: { locale: string; slug: string };
 }) {
   const t = await getTranslations("lab");
+  const nav = await getTranslations("nav");
   const meta = getNotebookMeta(slug);
+
+  const crumbLink = {
+    color: "var(--cds-link-primary)",
+    textDecoration: "none",
+  } as const;
+  const breadcrumb = (
+    <nav
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "0.5rem",
+        fontSize: "0.875rem",
+      }}
+    >
+      <Link href={`/${locale}`} style={crumbLink}>
+        {nav("home")}
+      </Link>
+      <span style={{ color: "var(--cds-text-helper)" }}>/</span>
+      <Link href={`/${locale}/lab`} style={crumbLink}>
+        {t("back")}
+      </Link>
+    </nav>
+  );
 
   if (!meta) {
     return (
       <main style={{ maxWidth: "820px", margin: "0 auto", padding: "2rem 1rem" }}>
-        <Link href={`/${locale}/lab`} style={{ color: "var(--cds-link-primary)" }}>
-          {t("back")}
-        </Link>
+        {breadcrumb}
         <p style={{ color: "var(--cds-text-secondary)", marginTop: "1rem" }}>
           {t("not_found")}
         </p>
@@ -61,12 +83,7 @@ export default async function NotebookPage({
 
   return (
     <main style={{ maxWidth: "820px", margin: "0 auto", padding: "2rem 1rem" }}>
-      <Link
-        href={`/${locale}/lab`}
-        style={{ color: "var(--cds-link-primary)", fontSize: "0.875rem" }}
-      >
-        {t("back")}
-      </Link>
+      {breadcrumb}
 
       <h1 style={{ margin: "1rem 0 0.5rem", fontWeight: 300 }}>{meta.title}</h1>
       <p style={{ color: "var(--cds-text-secondary)", marginTop: 0 }}>

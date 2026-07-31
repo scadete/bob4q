@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { listNotebooks } from "@/lib/notebooks";
+import { BackLink } from "@/components/BackLink";
 
 export default async function LabPage({
   params: { locale },
@@ -8,11 +9,13 @@ export default async function LabPage({
   params: { locale: string };
 }) {
   const t = await getTranslations("lab");
+  const nav = await getTranslations("nav");
   const notebooks = listNotebooks();
 
   return (
     <main style={{ maxWidth: "820px", margin: "0 auto", padding: "2.5rem 1rem" }}>
-      <h1 style={{ fontWeight: 300, marginBottom: "0.5rem" }}>{t("title")}</h1>
+      <BackLink href={`/${locale}`} label={nav("home")} />
+      <h1 style={{ fontWeight: 300, margin: "1rem 0 0.5rem" }}>{t("title")}</h1>
       <p style={{ color: "var(--cds-text-secondary)", marginTop: 0 }}>
         {t("index_intro")}
       </p>

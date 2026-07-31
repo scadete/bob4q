@@ -2,9 +2,10 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import Link from "next/link";
 import { Button } from "@carbon/react";
-import { ChevronLeft, ChevronRight, Maximize } from "@carbon/icons-react";
+import { ChevronLeft, ChevronRight, Home, Maximize } from "@carbon/icons-react";
 import type { ReactNode } from "react";
 
 export interface Slide {
@@ -22,6 +23,8 @@ export default function SlideShow({ slides }: SlideShowProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations("demo");
+  const tnav = useTranslations("nav");
+  const locale = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const total = slides.length;
@@ -127,16 +130,27 @@ export default function SlideShow({ slides }: SlideShowProps) {
           flexShrink: 0,
         }}
       >
-        <Button
-          kind="ghost"
-          size="sm"
-          renderIcon={ChevronLeft}
-          onClick={() => go(current - 1)}
-          disabled={current === 1}
-          iconDescription={t("prev")}
-        >
-          {t("prev")}
-        </Button>
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+          <Button
+            as={Link}
+            href={`/${locale}`}
+            kind="ghost"
+            size="sm"
+            renderIcon={Home}
+          >
+            {tnav("home")}
+          </Button>
+          <Button
+            kind="ghost"
+            size="sm"
+            renderIcon={ChevronLeft}
+            onClick={() => go(current - 1)}
+            disabled={current === 1}
+            iconDescription={t("prev")}
+          >
+            {t("prev")}
+          </Button>
+        </div>
 
         <span style={{ fontSize: "0.875rem", color: "var(--cds-text-secondary)" }}>
           {t("slide_counter")
