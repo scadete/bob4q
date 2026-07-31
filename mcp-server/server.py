@@ -1,5 +1,7 @@
 """
-bob4q MCP Server — Qiskit + Qiskit Code Assistant integration.
+bob4q MCP Server — wraps the local Qiskit Code Assistant (Granite via Ollama).
+
+Circuit execution is handled by the FastAPI backend, not here.
 
 Transport modes:
   stdio (default) — IBM Bob spawns this as a subprocess
@@ -14,7 +16,6 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import json
 import logging
 import os
 from typing import Any
@@ -28,54 +29,10 @@ logger = logging.getLogger(__name__)
 
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 GRANITE_MODEL = os.getenv("GRANITE_MODEL", "granite3.1-dense:8b")
-IBMQ_API_TOKEN = os.getenv("IBMQ_API_TOKEN", "")
 
 # ---------------------------------------------------------------------------
 # Tool implementations
 # ---------------------------------------------------------------------------
-
-
-def _run_circuit_sync(code: str, backend: str) -> dict[str, Any]:
-    """Execute a Qiskit circuit and return measurement counts."""
-    local_ns: dict[str, Any] = {}
-    exec(code, {"__builtins__": __builtins__}, local_ns)  # noqa: S102
-
-    qc = local_ns.get("qc")
-    if qc is None:
-        return {"error": "Circuit code must assign a QuantumCircuit to 'qc'"}
-
-    if backend in ("aer_simulator", "ibmq_qasm_simulator"):
-        from qiskit_aer import AerSimulator  # type: ignore[import]
-        from qiskit import transpile  # type: ignore[import]
-
-        sim = AerSimulator()
-        compiled = transpile(qc, sim)
-        job = sim.run(compiled, shots=1024)
-        result = job.result()
-        counts = dict(result.get_counts())
-        return {"backend": "aer_simulator", "counts": counts, "shots": 1024}
-
-    # Real IBM Quantum backend path
-    if not IBMQ_API_TOKEN:
-        return {"error": "IBMQ_API_TOKEN not set — cannot use real QPU"}
-
-    from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2 as Sampler  # type: ignore[import]
-    from qiskit import transpile  # type: ignore[import]
-
-    service = QiskitRuntimeService(token=IBMQ_API_TOKEN)
-    ibm_backend = service.backend(backend)
-    compiled = transpile(qc, ibm_backend)
-    sampler = Sampler(ibm_backend)
-    job = sampler.run([compiled])
-    result = job.result()
-    counts = dict(result[0].data.meas.get_counts())
-    return {"backend": backend, "counts": counts}
-
-
-async def run_circuit(code: str, backend: str = "aer_simulator") -> dict[str, Any]:
-    """MCP tool: execute a Qiskit circuit."""
-    loop = asyncio.get_event_loop()
-    return await loop.run_in_executor(None, _run_circuit_sync, code, backend)
 
 
 async def explain_circuit(code: str) -> str:
@@ -99,44 +56,11 @@ async def explain_circuit(code: str) -> str:
         return data["choices"][0]["message"]["content"]
 
 
-def list_backends() -> list[str]:
-    """MCP tool: return available backends."""
-    backends = ["aer_simulator"]
-    if IBMQ_API_TOKEN:
-        try:
-            from qiskit_ibm_runtime import QiskitRuntimeService  # type: ignore[import]
-
-            service = QiskitRuntimeService(token=IBMQ_API_TOKEN)
-            backends += [b.name for b in service.backends()]
-        except Exception as exc:  # noqa: BLE001
-            logger.warning("Could not fetch IBM backends: %s", exc)
-    return backends
-
-
 # ---------------------------------------------------------------------------
 # MCP Server setup
 # ---------------------------------------------------------------------------
 
 TOOLS: list[Tool] = [
-    Tool(
-        name="run_circuit",
-        description="Execute a Qiskit quantum circuit on a simulator or real IBM Quantum backend.",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "string",
-                    "description": "Python code that builds a QuantumCircuit assigned to variable 'qc'",
-                },
-                "backend": {
-                    "type": "string",
-                    "description": "Backend name (default: aer_simulator)",
-                    "default": "aer_simulator",
-                },
-            },
-            "required": ["code"],
-        },
-    ),
     Tool(
         name="explain_circuit",
         description="Explain a Qiskit circuit using Qiskit Code Assistant (via Ollama Granite model).",
@@ -151,11 +75,6 @@ TOOLS: list[Tool] = [
             "required": ["code"],
         },
     ),
-    Tool(
-        name="list_backends",
-        description="List available quantum computing backends (simulator + IBM Quantum if token set).",
-        inputSchema={"type": "object", "properties": {}},
-    ),
 ]
 
 
@@ -169,20 +88,9 @@ def create_server() -> Server:
     @server.call_tool()
     async def handle_call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
         try:
-            if name == "run_circuit":
-                result = await run_circuit(
-                    code=arguments["code"],
-                    backend=arguments.get("backend", "aer_simulator"),
-                )
-                return [TextContent(type="text", text=json.dumps(result, indent=2))]
-
-            elif name == "explain_circuit":
+            if name == "explain_circuit":
                 explanation = await explain_circuit(code=arguments["code"])
                 return [TextContent(type="text", text=explanation)]
-
-            elif name == "list_backends":
-                backends = list_backends()
-                return [TextContent(type="text", text=json.dumps(backends))]
 
             else:
                 return [TextContent(type="text", text=f"Unknown tool: {name}")]

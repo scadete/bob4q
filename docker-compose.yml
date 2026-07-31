@@ -25,9 +25,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - MCP_SERVER_URL=http://mcp-server:8765
-    depends_on:
-      - mcp-server
+      - IBMQ_API_TOKEN=${IBMQ_API_TOKEN:-}
 
   mcp-server:
     build:
@@ -36,7 +34,6 @@ services:
     ports:
       - "8765:8765"
     environment:
-      - IBMQ_API_TOKEN=${IBMQ_API_TOKEN:-}
       - OLLAMA_HOST=http://ollama:11434
       - GRANITE_MODEL=${GRANITE_MODEL:-granite3.1-dense:8b}
     depends_on:

@@ -58,7 +58,7 @@ Items are **ready** when all unknowns are resolved and acceptance criteria are c
 - Add router skeletons: `routers/circuit.py` `routers/backends.py`
 - `POST /api/circuit/run` accepts `{ code: str, backend: str }` → returns `{ job_id, status }`
 - `GET /api/circuit/result/{job_id}` → returns `{ counts, statevector }`
-- `GET /api/backends` → proxies `list_backends` MCP tool
+- `GET /api/backends` → computes the list locally (`aer_simulator` + IBM Quantum when `IBMQ_API_TOKEN` set)
 - **AC:** `uv run uvicorn main:app --reload` serves; `/health` returns `{"status":"ok"}`; OpenAPI docs at `/docs`
 
 ---
@@ -66,12 +66,10 @@ Items are **ready** when all unknowns are resolved and acceptance criteria are c
 ### INFRA-03 · MCP server — core implementation
 **Status:** `ready` · **Priority:** `P1` · **Depends on:** —
 **Scope:** `mcp-server/`
-- Complete `server.py` with real MCP tool registration (replace TODOs)
-- Tool: `run_circuit(code: str, backend: str) → dict` — execute Qiskit circuit via `qiskit_ibm_runtime` or `AerSimulator`
+- Scope: the MCP server ONLY wraps the local Qiskit Code Assistant (circuit execution/backends live in the FastAPI backend)
 - Tool: `explain_circuit(code: str) → str` — POST to Ollama `http://localhost:11434/v1/chat/completions` with granite model
-- Tool: `list_backends() → list[str]` — return available backends
 - Dual transport: stdio default, `--http` flag starts FastAPI/SSE on port 8765
-- **AC:** Bob can connect in stdio mode; `uv run server.py --http` starts without error; all 3 tools callable
+- **AC:** Bob can connect in stdio mode; `uv run server.py --http` starts without error; `explain_circuit` callable
 
 ---
 

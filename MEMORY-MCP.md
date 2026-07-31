@@ -6,14 +6,16 @@
 - HTTP SSE → `--http` flag, port 8765, for Docker/remote demos
 - Config file Bob reads: `~/.bob/mcp-servers.json` (local) or env var `BOB_MCP_URL` (remote)
 
-## Qiskit Integration
+## Scope
+- The MCP server **only wraps the local Qiskit Code Assistant** (Granite via Ollama). No other use for now.
+- Circuit execution and backend listing live in the **FastAPI backend** (`/api/circuit/run`, `/api/backends`) — NOT the MCP server.
+
+## Qiskit Code Assistant Integration
 - Qiskit Code Assistant = local model only (granite-based), no cloud API
-- Model served via **Ollama** — participants run `ollama pull ibm-granite/...` pre-workshop
+- Model served via **Ollama** — participants run `ollama pull granite3.1-dense:8b` pre-workshop
 - MCP server calls Ollama via `httpx` (OpenAI-compatible endpoint at `http://localhost:11434`)
-- MCP tools to expose:
-  - `run_circuit` → execute Qiskit circuit on simulator or real backend
+- MCP tool exposed:
   - `explain_circuit` → pass circuit to Qiskit Code Assistant (via Ollama) for explanation
-  - `list_backends` → list available IBM Quantum backends
 
 ## Container Image
 - Image: `ghcr.io/YOUR_ORG/bob4q-mcp:latest`

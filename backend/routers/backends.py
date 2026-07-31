@@ -2,28 +2,29 @@
 
 from __future__ import annotations
 
+import logging
 import os
 
-import httpx
 from fastapi import APIRouter
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["backends"])
 
-MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "http://localhost:8765")
+IBMQ_API_TOKEN = os.getenv("IBMQ_API_TOKEN", "")
 
 
 @router.get("/backends")
 async def list_backends() -> list[str]:
-    """Proxy list_backends from the MCP server (falls back to defaults)."""
-    try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            resp = await client.post(
-                f"{MCP_SERVER_URL}/tools/list_backends",
-                json={},
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            return data.get("backends", [])
-    except Exception:  # noqa: BLE001
-        # Fallback when MCP server is unavailable
-        return ["aer_simulator", "ibmq_qasm_simulator"]
+    """List available quantum backends: the local Aer simulator, plus IBM
+    Quantum backends when IBMQ_API_TOKEN is set."""
+    backends = ["aer_simulator"]
+    if IBMQ_API_TOKEN:
+        try:
+            from qiskit_ibm_runtime import QiskitRuntimeService  # type: ignore[import]
+
+            service = QiskitRuntimeService(token=IBMQ_API_TOKEN)
+            backends += [b.name for b in service.backends()]
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Could not fetch IBM backends: %s", exc)
+    return backends

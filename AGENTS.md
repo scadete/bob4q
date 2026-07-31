@@ -11,7 +11,7 @@ This file provides guidance to agents when working with code in this repository.
 | Frontend | Next.js 14 (App Router) + Carbon Design System (`@carbon/react`) |
 | Math/Animations | CSS/JS React components (Manim scenes in `manim/` are the reference spec, not rendered) |
 | Backend/API | FastAPI (Python) — quantum circuit execution |
-| MCP Server | Custom Python MCP server wrapping Qiskit — runnable locally or in Podman |
+| MCP Server | Custom Python MCP server wrapping the local Qiskit Code Assistant (Granite via Ollama) — stdio or HTTP |
 | i18n | `next-intl` — locale files in `frontend/messages/{locale}.json` |
 | Package mgr (JS) | pnpm (workspaces) |
 | Package mgr (Py) | uv (per Python package) |
@@ -97,7 +97,7 @@ Always import from `@carbon/react`, never `carbon-components-react`. Use Carbon 
 Both must be updated together when adding user-facing content.
 
 ### Qiskit Code Assistant (local model only)
-Qiskit Code Assistant runs only as a local model (no cloud API). The MCP server wraps it via subprocess. For workshops: participants either run locally or pull the pre-built container image `ghcr.io/YOUR_ORG/bob4q-mcp:latest` via Podman or Docker.
+Qiskit Code Assistant runs only as a local model (no cloud API), served via Ollama. The MCP server's sole purpose is to wrap it (tool: `explain_circuit`); circuit execution and backend listing live in the FastAPI backend (`/api/circuit/run`, `/api/backends`), not the MCP server. For workshops: participants either run locally or pull the pre-built container image `ghcr.io/YOUR_ORG/bob4q-mcp:latest` via Podman or Docker.
 
 ### Python env isolation
 Each Python package (`mcp-server/`, `backend/`, `manim/`) has its own `pyproject.toml` + `uv.lock`. Never share venvs across packages.
