@@ -2,12 +2,14 @@
 
 import { useEffect, useRef } from "react";
 import {
+  apply,
   drawLabel,
   drawSphere,
   drawVector,
   makeCamera,
   mixColor,
   parseColor,
+  rotAxis,
   type Camera,
   type Vec3,
 } from "./bloch";
@@ -27,10 +29,15 @@ import {
 const SP: Vec3 = [1, 0, 0]; // |+⟩
 const S0: Vec3 = [0, 1, 0]; // |0⟩
 const S1: Vec3 = [0, -1, 0]; // |1⟩
+const H_AXIS: Vec3 = [1, 1, 0]; // H = 180° about (X+Z)/√2
 
-const SHOT_MS = 520; // one measurement cycle
-const SUPER_FRAC = 0.42; // fraction of the cycle spent showing |+⟩ before collapse
-const RESET_N = 48; // reset the tally after this many shots (re-demonstrate convergence)
+const SHOT_MS = 1200; // one full cycle: |0⟩ → H → |+⟩ → measure
+const P_H_START = 0.06; // |0⟩ shown until here, then the H gate animates
+const P_H_END = 0.4; // H rotation finishes (now at |+⟩)
+const P_MEASURE = 0.58; // hold |+⟩ until here, then collapse
+const RESET_N = 40; // reset the tally after this many shots (re-demonstrate convergence)
+
+const smoothstep = (u: number) => u * u * (3 - 2 * u);
 
 export function SuperpositionAnimation() {
   const stageRef = useRef<HTMLDivElement>(null);
@@ -102,7 +109,7 @@ export function SuperpositionAnimation() {
       ctx.fillText(letter, cam.cx, y + s / 2 + 1);
     };
 
-    const drawScene = (dir: Vec3, measuring: boolean) => {
+    const drawScene = (dir: Vec3, badge: string | null) => {
       const size = cam.cx * 2;
       ctx.clearRect(0, 0, size, size);
       drawSphere(ctx, cam, colors);
@@ -111,7 +118,7 @@ export function SuperpositionAnimation() {
       drawLabel(ctx, S0, cam, "|0⟩", colors.text, font);
       drawLabel(ctx, S1, cam, "|1⟩", colors.text, font);
       drawLabel(ctx, SP, cam, "|+⟩", colors.text, font);
-      if (measuring) drawBadge("M");
+      if (badge) drawBadge(badge);
     };
 
     setup();
@@ -119,10 +126,10 @@ export function SuperpositionAnimation() {
     let raf = 0;
 
     if (reduce) {
-      counts[0] = 24;
-      counts[1] = 24;
+      counts[0] = 20;
+      counts[1] = 20;
       updateHist();
-      drawScene(SP, false);
+      drawScene(SP, null);
     } else {
       updateHist();
       let shotStart = performance.now();
@@ -138,9 +145,16 @@ export function SuperpositionAnimation() {
         }
         const phase = (now - shotStart) / SHOT_MS;
         let dir: Vec3;
-        let measuring = false;
-        if (phase < SUPER_FRAC) {
-          dir = SP;
+        let badge: string | null = null;
+        if (phase < P_H_START) {
+          dir = S0; // |0⟩
+        } else if (phase < P_H_END) {
+          // Animate the Hadamard: |0⟩ → |+⟩.
+          const p = smoothstep((phase - P_H_START) / (P_H_END - P_H_START));
+          dir = apply(rotAxis(H_AXIS, 180 * p), S0);
+          badge = "H";
+        } else if (phase < P_MEASURE) {
+          dir = SP; // |+⟩ superposition
         } else {
           if (outcome === null) {
             outcome = Math.random() < 0.5 ? 0 : 1;
@@ -149,9 +163,9 @@ export function SuperpositionAnimation() {
           }
           // Measurement collapse is instantaneous — jump straight to the result.
           dir = outcome === 0 ? S0 : S1;
-          measuring = true;
+          badge = "M";
         }
-        drawScene(dir, measuring);
+        drawScene(dir, badge);
         raf = requestAnimationFrame(frame);
       };
       raf = requestAnimationFrame(frame);
@@ -159,7 +173,7 @@ export function SuperpositionAnimation() {
 
     const onResize = () => {
       setup();
-      if (reduce) drawScene(SP, false);
+      if (reduce) drawScene(SP, null);
     };
     window.addEventListener("resize", onResize);
     return () => {
@@ -173,7 +187,7 @@ export function SuperpositionAnimation() {
   return (
     <div
       role="img"
-      aria-label="An equal-superposition qubit measured repeatedly, its outcomes tallied into a histogram that converges to 50/50"
+      aria-label="A Hadamard gate puts |0⟩ into superposition |+⟩, then repeated measurements collapse it to |0⟩ or |1⟩ and are tallied into a histogram that converges to 50/50"
       style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem", color: "var(--cds-text-primary)" }}
     >
       <div ref={stageRef} style={{ position: "relative", width: stageSize, aspectRatio: "1" }}>
@@ -181,7 +195,7 @@ export function SuperpositionAnimation() {
       </div>
 
       <div style={{ width: stageSize, textAlign: "center", fontSize: "0.9rem", color: "var(--cds-text-secondary)" }}>
-        |+⟩ = (|0⟩ + |1⟩)/√2 — measure many times → 50/50
+        H|0⟩ = |+⟩, then measure → random |0⟩ or |1⟩ (→ 50/50)
       </div>
 
       {/* Running tally of measurement outcomes. */}
