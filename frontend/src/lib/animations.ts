@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import { QubitAnimation } from "@/components/animations/QubitAnimation";
 import { SuperpositionAnimation } from "@/components/animations/SuperpositionAnimation";
+import { EntanglementAnimation } from "@/components/animations/EntanglementAnimation";
 
 /**
  * bob4q animation registry.
@@ -20,6 +21,7 @@ export type AnimationName = "qubit" | "superposition" | "entanglement";
 export const animations: Partial<Record<AnimationName, ComponentType>> = {
   qubit: QubitAnimation,
   superposition: SuperpositionAnimation,
+  entanglement: EntanglementAnimation,
 };
 
 export function getAnimation(name: AnimationName): ComponentType | undefined {
