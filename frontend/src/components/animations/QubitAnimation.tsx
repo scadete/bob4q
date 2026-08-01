@@ -63,6 +63,10 @@ export function QubitAnimation() {
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const captionRef = useRef<HTMLDivElement>(null);
+  const p0FillRef = useRef<HTMLSpanElement>(null);
+  const p0TxtRef = useRef<HTMLSpanElement>(null);
+  const p1FillRef = useRef<HTMLSpanElement>(null);
+  const p1TxtRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -142,6 +146,13 @@ export function QubitAnimation() {
       const equatorness = 1 - Math.abs(dir[1]); // 0 at poles → 1 at equator
       drawVector(ctx, dir, cam, mixColor(red, yellow, equatorness), 2.5, vectorAlpha(t));
 
+      // Live measurement probabilities: P(0) = (1 + pole·state)/2, pole = +Y.
+      const p0 = Math.max(0, Math.min(1, (1 + dir[1]) / 2));
+      if (p0FillRef.current) p0FillRef.current.style.width = `${p0 * 100}%`;
+      if (p1FillRef.current) p1FillRef.current.style.width = `${(1 - p0) * 100}%`;
+      if (p0TxtRef.current) p0TxtRef.current.textContent = `${Math.round(p0 * 100)}%`;
+      if (p1TxtRef.current) p1TxtRef.current.textContent = `${Math.round((1 - p0) * 100)}%`;
+
       drawLabel(ctx, S0, cam, "|0⟩", colors.text, font);
       drawLabel(ctx, S1, cam, "|1⟩", colors.text, font);
       drawLabel(ctx, SP, cam, "|+⟩", colors.text, font);
@@ -192,6 +203,25 @@ export function QubitAnimation() {
       <div ref={stageRef} style={{ position: "relative", width: stageSize, aspectRatio: "1" }}>
         <canvas ref={canvasRef} style={{ width: "100%", display: "block" }} />
       </div>
+
+      {/* Live measurement probabilities (update with the state each frame). */}
+      <div style={{ width: stageSize, display: "flex", flexDirection: "column", gap: "0.4rem", fontSize: "0.8rem", color: "var(--cds-text-secondary)" }}>
+        {(
+          [
+            ["P(|0⟩)", p0FillRef, p0TxtRef, "var(--cds-support-info)"],
+            ["P(|1⟩)", p1FillRef, p1TxtRef, "var(--cds-support-error)"],
+          ] as const
+        ).map(([label, fillRef, txtRef, color]) => (
+          <div key={label} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <span style={{ width: "3rem" }}>{label}</span>
+            <span style={{ flex: 1, height: "8px", background: "var(--cds-layer-02, #393939)", borderRadius: "2px", overflow: "hidden", display: "block" }}>
+              <span ref={fillRef} style={{ display: "block", height: "100%", width: "50%", background: color }} />
+            </span>
+            <span ref={txtRef} style={{ width: "2.6rem", textAlign: "right" }}>50%</span>
+          </div>
+        ))}
+      </div>
+
       <div
         ref={captionRef}
         aria-hidden="true"
