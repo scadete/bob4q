@@ -32,17 +32,6 @@ const SHOT_MS = 520; // one measurement cycle
 const SUPER_FRAC = 0.42; // fraction of the cycle spent showing |+⟩ before collapse
 const RESET_N = 48; // reset the tally after this many shots (re-demonstrate convergence)
 
-const norm = (v: Vec3): Vec3 => {
-  const l = Math.hypot(v[0], v[1], v[2]) || 1;
-  return [v[0] / l, v[1] / l, v[2] / l];
-};
-const lerpV = (a: Vec3, b: Vec3, s: number): Vec3 => [
-  a[0] + (b[0] - a[0]) * s,
-  a[1] + (b[1] - a[1]) * s,
-  a[2] + (b[2] - a[2]) * s,
-];
-const easeIn = (u: number) => u * u;
-
 export function SuperpositionAnimation() {
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -158,8 +147,8 @@ export function SuperpositionAnimation() {
             counts[outcome] += 1;
             updateHist();
           }
-          const s = easeIn((phase - SUPER_FRAC) / (1 - SUPER_FRAC));
-          dir = norm(lerpV(SP, outcome === 0 ? S0 : S1, s));
+          // Measurement collapse is instantaneous — jump straight to the result.
+          dir = outcome === 0 ? S0 : S1;
           measuring = true;
         }
         drawScene(dir, measuring);
