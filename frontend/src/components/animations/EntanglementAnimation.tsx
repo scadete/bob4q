@@ -5,30 +5,23 @@ import { useEffect, useRef } from "react";
 /**
  * ANIM-03 — Entanglement / Bell state.
  *
- * Reference: manim/scenes/entanglement.py. Two qubits: H on A, then CNOT →
- * the Bell state |Φ⁺⟩ = (|00⟩ + |11⟩)/√2. Measuring A instantly determines B —
- * outcomes are always correlated (00 or 11, never 01 or 10), shown by a
- * four-bar histogram where only 00 and 11 ever fill.
+ * Reference: manim/scenes/entanglement.py. A persistent two-qubit circuit
+ * (H on q0, then CNOT, then measurement) with a vertical execution "playhead"
+ * that sweeps left→right: as it passes H, q0 enters superposition; as it passes
+ * CNOT, the two qubits entangle (|Φ⁺⟩); reaching the meters triggers a
+ * correlated measurement. Outcomes are always 00 or 11 — never 01/10 — shown by
+ * a four-bar histogram where only 00 and 11 ever fill.
  *
- * Deliberately NOT a Bloch sphere: each entangled qubit alone is maximally
- * mixed (a dot at the centre), so entanglement is shown as the correlation
- * between two nodes, not as single-qubit arrows.
+ * Not a Bloch sphere: an entangled qubit alone is maximally mixed, so this
+ * shows the correlation, not single-qubit arrows.
  *
- * Honors `prefers-reduced-motion`: static entangled-pair frame + a 00/11
- * histogram.
+ * Honors `prefers-reduced-motion`: static post-measurement frame + histogram.
  */
 
-type NodeState = "0" | "1" | "?";
-interface Beat {
-  a: NodeState;
-  b: NodeState;
-  bond: number; // 0 = none, 1 = fully entangled
-  badge: string | null;
-  flash: number; // measurement flash 0..1
-  bell: boolean; // show the |Φ⁺⟩ label
-}
-
 const SHOT_MS = 2600;
+const P_EXEC = 0.58; // playhead reaches the meters (measurement) at this phase
+const H_P = 0.3; // H gate position along the sweep (0..1)
+const CNOT_P = 0.62; // CNOT position along the sweep
 const RESET_N = 40;
 const OUTCOMES = ["00", "01", "10", "11"] as const;
 
@@ -48,20 +41,19 @@ export function EntanglementAnimation() {
     const cs = getComputedStyle(canvas);
     const tok = (name: string, fallback: string) => cs.getPropertyValue(name).trim() || fallback;
     const colors = {
-      node: tok("--cds-layer-01", "#262626"),
+      wire: tok("--cds-border-strong", "#8d8d8d"),
+      box: tok("--cds-layer-01", "#262626"),
       text: tok("--cds-text-primary", "#f4f4f4"),
       textDim: tok("--cds-text-secondary", "#c6c6c6"),
-      badgeBg: tok("--cds-layer-01", "#262626"),
-      accent: tok("--cds-border-interactive", "#4589ff"),
-      a: tok("--cds-support-info", "#4589ff"),
-      b: tok("--cds-support-error", "#fa4d56"),
-      bond: tok("--cds-support-warning", "#f1c21b"),
+      gate: tok("--cds-border-interactive", "#4589ff"),
+      state: tok("--cds-support-warning", "#f1c21b"), // superposition / entangled / result
+      play: tok("--cds-support-info", "#4589ff"),
     };
 
     let W = 0, H = 0;
     const setup = () => {
       W = stage.clientWidth;
-      H = Math.round(W * 0.58);
+      H = Math.round(W * 0.5);
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = W * dpr;
       canvas.height = H * dpr;
@@ -85,91 +77,159 @@ export function EntanglementAnimation() {
       if (totalRef.current) totalRef.current.textContent = `${total} measurement${total === 1 ? "" : "s"}`;
     };
 
-    const drawNode = (x: number, y: number, r: number, label: NodeState, ring: string) => {
-      ctx.fillStyle = colors.node;
-      ctx.strokeStyle = ring;
-      ctx.lineWidth = 2.5;
-      ctx.globalAlpha = label === "?" ? 0.9 : 1;
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = label === "?" ? colors.textDim : colors.text;
-      ctx.font = `bold ${label === "?" ? Math.round(r * 0.9) : Math.round(r * 1.1)}px 'IBM Plex Sans', system-ui, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(label, x, y + 1);
-    };
-
-    const drawBadge = (letter: string) => {
-      const s = 26, x = W / 2 - s / 2, y = 6;
-      ctx.fillStyle = colors.badgeBg;
-      ctx.strokeStyle = colors.accent;
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.rect(x, y, s, s);
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillStyle = colors.text;
-      ctx.font = "bold 15px 'IBM Plex Sans', system-ui, sans-serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(letter, W / 2, y + s / 2 + 1);
-    };
+    interface Beat {
+      playProg: number; // 0..1 across the circuit; <0 hides the playhead
+      playAlpha: number;
+      superposed: boolean;
+      entangled: boolean;
+      outcome: "0" | "1" | null;
+      flash: number;
+    }
 
     const draw = (bt: Beat) => {
       ctx.clearRect(0, 0, W, H);
-      const r = W * 0.13;
-      const ay = H * 0.55;
-      const ax = W * 0.24;
-      const bx = W * 0.76;
+      const wy0 = H * 0.4;
+      const wy1 = H * 0.72;
+      const sx0 = W * 0.16; // sweep start (also wire start after labels)
+      const sx1 = W * 0.8; // sweep end = meter x
+      const wireEnd = W * 0.92;
+      const prog2x = (p: number) => sx0 + (sx1 - sx0) * p;
+      const hx = prog2x(H_P);
+      const cx = prog2x(CNOT_P);
+      const r = Math.max(9, W * 0.028);
+      const box = Math.max(20, W * 0.07);
 
-      // Entanglement bond (grows with bt.bond; brightens on measurement flash).
-      if (bt.bond > 0) {
-        ctx.save();
-        ctx.strokeStyle = colors.bond;
-        ctx.lineWidth = 2 + bt.flash * 2;
-        ctx.globalAlpha = 0.35 + bt.bond * 0.4 + bt.flash * 0.25;
-        ctx.shadowColor = colors.bond;
-        ctx.shadowBlur = 6 + bt.bond * 8 + bt.flash * 18;
-        ctx.setLineDash([6, 5]);
+      // Base wires.
+      ctx.strokeStyle = colors.wire;
+      ctx.lineWidth = 1.6;
+      for (const wy of [wy0, wy1]) {
         ctx.beginPath();
-        ctx.moveTo(ax + r, ay);
-        ctx.lineTo(ax + r + (bx - r - (ax + r)) * bt.bond, ay);
+        ctx.moveTo(W * 0.1, wy);
+        ctx.lineTo(wireEnd, wy);
+        ctx.stroke();
+      }
+
+      // State overlay: q0 superposed after H; both entangled after CNOT.
+      ctx.strokeStyle = colors.state;
+      ctx.lineWidth = 2.4;
+      ctx.globalAlpha = 0.85;
+      if (bt.superposed) {
+        ctx.beginPath();
+        ctx.moveTo(hx, wy0);
+        ctx.lineTo(bt.entangled ? cx : wireEnd, wy0);
+        ctx.stroke();
+      }
+      if (bt.entangled) {
+        for (const wy of [wy0, wy1]) {
+          ctx.beginPath();
+          ctx.moveTo(cx, wy);
+          ctx.lineTo(wireEnd, wy);
+          ctx.stroke();
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      // |0⟩ input labels.
+      ctx.fillStyle = colors.textDim;
+      ctx.font = `${Math.round(r * 1.5)}px 'IBM Plex Sans', system-ui, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("|0⟩", W * 0.06, wy0);
+      ctx.fillText("|0⟩", W * 0.06, wy1);
+
+      // H gate box on q0.
+      ctx.fillStyle = colors.box;
+      ctx.strokeStyle = colors.gate;
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.rect(hx - box / 2, wy0 - box / 2, box, box);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = colors.text;
+      ctx.font = `bold ${Math.round(box * 0.5)}px 'IBM Plex Sans', system-ui, sans-serif`;
+      ctx.fillText("H", hx, wy0 + 1);
+
+      // CNOT: control dot on q0, line to target ⊕ on q1.
+      ctx.strokeStyle = colors.gate;
+      ctx.fillStyle = colors.gate;
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(cx, wy0);
+      ctx.lineTo(cx, wy1);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx, wy0, r * 0.42, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(cx, wy1, r, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx - r, wy1);
+      ctx.lineTo(cx + r, wy1);
+      ctx.moveTo(cx, wy1 - r);
+      ctx.lineTo(cx, wy1 + r);
+      ctx.stroke();
+
+      // |Φ⁺⟩ label once entangled.
+      if (bt.entangled) {
+        ctx.fillStyle = colors.state;
+        ctx.font = `${Math.round(r * 1.4)}px 'IBM Plex Sans', system-ui, sans-serif`;
+        ctx.fillText("|Φ⁺⟩", (cx + sx1) / 2, wy0 - box * 0.9);
+      }
+
+      // Measurement meters (show the outcome digit once measured).
+      for (const wy of [wy0, wy1]) {
+        ctx.fillStyle = colors.box;
+        ctx.strokeStyle = bt.outcome ? colors.state : colors.wire;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.rect(sx1 - box / 2, wy - box / 2, box, box);
+        ctx.fill();
+        ctx.stroke();
+        if (bt.outcome) {
+          ctx.fillStyle = colors.state;
+          ctx.font = `bold ${Math.round(box * 0.6)}px 'IBM Plex Sans', system-ui, sans-serif`;
+          ctx.fillText(bt.outcome, sx1, wy + 1);
+        } else {
+          // little gauge arc
+          ctx.strokeStyle = colors.textDim;
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.arc(sx1, wy + box * 0.15, box * 0.3, Math.PI, 0);
+          ctx.stroke();
+        }
+      }
+
+      // Correlation bond between the two results (glows on measurement).
+      if (bt.outcome) {
+        ctx.save();
+        ctx.strokeStyle = colors.state;
+        ctx.lineWidth = 2 + bt.flash * 2;
+        ctx.globalAlpha = 0.4 + bt.flash * 0.5;
+        ctx.shadowColor = colors.state;
+        ctx.shadowBlur = 8 + bt.flash * 20;
+        ctx.beginPath();
+        ctx.moveTo(sx1 + box * 0.5, wy0);
+        ctx.lineTo(sx1 + box * 0.5, wy1);
         ctx.stroke();
         ctx.restore();
-        if (bt.bell) {
-          ctx.fillStyle = colors.bond;
-          ctx.font = "14px 'IBM Plex Sans', system-ui, sans-serif";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText("|Φ⁺⟩", W / 2, ay - r - 14);
-        }
       }
 
-      // Measurement flash rings.
-      if (bt.flash > 0) {
-        for (const x of [ax, bx]) {
-          ctx.strokeStyle = x === ax ? colors.a : colors.b;
-          ctx.globalAlpha = bt.flash * 0.7;
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.arc(x, ay, r + 6 + (1 - bt.flash) * 14, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.globalAlpha = 1;
-        }
+      // Execution playhead.
+      if (bt.playProg >= 0 && bt.playAlpha > 0) {
+        const px = prog2x(bt.playProg);
+        ctx.save();
+        ctx.strokeStyle = colors.play;
+        ctx.lineWidth = 2;
+        ctx.globalAlpha = bt.playAlpha;
+        ctx.shadowColor = colors.play;
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.moveTo(px, wy0 - box * 0.8);
+        ctx.lineTo(px, wy1 + box * 0.8);
+        ctx.stroke();
+        ctx.restore();
       }
-
-      drawNode(ax, ay, r, bt.a, colors.a);
-      drawNode(bx, ay, r, bt.b, colors.b);
-      ctx.fillStyle = colors.textDim;
-      ctx.font = "12px 'IBM Plex Sans', system-ui, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText("A", ax, ay + r + 16);
-      ctx.fillText("B", bx, ay + r + 16);
-
-      if (bt.badge) drawBadge(bt.badge);
     };
 
     setup();
@@ -180,7 +240,7 @@ export function EntanglementAnimation() {
       counts["00"] = 20;
       counts["11"] = 20;
       updateHist();
-      draw({ a: "?", b: "?", bond: 1, badge: null, flash: 0, bell: true });
+      draw({ playProg: -1, playAlpha: 0, superposed: true, entangled: true, outcome: "0", flash: 0 });
     } else {
       updateHist();
       let shotStart = performance.now();
@@ -194,25 +254,17 @@ export function EntanglementAnimation() {
         }
         const p = (now - shotStart) / SHOT_MS;
         let bt: Beat;
-        if (p < 0.08) {
-          bt = { a: "0", b: "0", bond: 0, badge: null, flash: 0, bell: false };
-        } else if (p < 0.26) {
-          bt = { a: "?", b: "0", bond: 0, badge: "H", flash: 0, bell: false }; // H on A
-        } else if (p < 0.3) {
-          bt = { a: "?", b: "0", bond: 0, badge: null, flash: 0, bell: false };
-        } else if (p < 0.5) {
-          const prog = (p - 0.3) / 0.2; // CNOT: bond grows, B entangles
-          bt = { a: "?", b: prog > 0.6 ? "?" : "0", bond: prog, badge: "⊕", flash: 0, bell: prog > 0.9 };
-        } else if (p < 0.6) {
-          bt = { a: "?", b: "?", bond: 1, badge: null, flash: 0, bell: true }; // entangled hold
+        if (p < P_EXEC) {
+          const prog = p / P_EXEC;
+          bt = { playProg: prog, playAlpha: 1, superposed: prog >= H_P, entangled: prog >= CNOT_P, outcome: null, flash: 0 };
         } else {
           if (outcome === null) {
             outcome = Math.random() < 0.5 ? "0" : "1";
             counts[outcome + outcome] += 1; // Bell state → 00 or 11 only
             updateHist();
           }
-          const flash = Math.max(0, 1 - (p - 0.6) / 0.14);
-          bt = { a: outcome, b: outcome, bond: 1, badge: flash > 0.1 ? "M" : null, flash, bell: false };
+          const flash = Math.max(0, 1 - (p - P_EXEC) / 0.16);
+          bt = { playProg: 1, playAlpha: Math.max(0, 1 - (p - P_EXEC) / 0.1), superposed: true, entangled: true, outcome, flash };
         }
         draw(bt);
         raf = requestAnimationFrame(frame);
@@ -222,7 +274,7 @@ export function EntanglementAnimation() {
 
     const onResize = () => {
       setup();
-      if (reduce) draw({ a: "?", b: "?", bond: 1, badge: null, flash: 0, bell: true });
+      if (reduce) draw({ playProg: -1, playAlpha: 0, superposed: true, entangled: true, outcome: "0", flash: 0 });
     };
     window.addEventListener("resize", onResize);
     return () => {
@@ -232,12 +284,12 @@ export function EntanglementAnimation() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const stageSize = "min(360px, 86vw)";
+  const stageSize = "min(380px, 88vw)";
   const monoLabel = { width: "2.4rem", fontFamily: "'IBM Plex Mono', monospace" } as const;
   return (
     <div
       role="img"
-      aria-label="Two qubits put into the Bell state with H then CNOT, then measured repeatedly; outcomes are always correlated (00 or 11), shown by a histogram where only 00 and 11 fill"
+      aria-label="A two-qubit circuit — H on q0 then CNOT — executed by a moving playhead to build the Bell state, then measured; outcomes are always correlated (00 or 11), shown by a histogram where only 00 and 11 fill"
       style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem", color: "var(--cds-text-primary)" }}
     >
       <div ref={stageRef} style={{ position: "relative", width: stageSize }}>
