@@ -33,7 +33,7 @@
 - [x] MCP server implementation complete (4 tools, stdio + HTTP SSE)
 - [x] Backend API implemented (routers/circuit.py, routers/backends.py)
 - [x] Manim reference scenes exist (QubitScene + SuperpositionScene + EntanglementScene) — spec for CSS/JS animations, not rendered
-- [ ] CSS/JS animation components (qubit, superposition, entanglement) — validate each concept with user before building
+- [x] CSS/JS animation components (qubit, superposition, entanglement) — built on shared bloch.ts 3D helper; registered in lib/animations.ts, shown in /demo
 - [x] Dockerfiles + Compose stack (frontend/backend/mcp/ollama services)
 - [x] Docs/i18n structure created (en + pt-BR, quantum-fundamentals + bob-setup)
 - [x] Workshop setup scripts complete (check-prereqs.sh/.ps1); render-all scripts removed with the video pivot

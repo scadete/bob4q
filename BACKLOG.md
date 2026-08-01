@@ -24,9 +24,9 @@ Items are **ready** when all unknowns are resolved and acceptance criteria are c
 | LAB-05 | Notebook 3 — Simulator vs Real QPU | `needs-info` | **P2** | LAB-03, INFRA-02 |
 | DEMO-01 | Demo route scaffold (`/demo`) | `done` | **P1** | INFRA-01 |
 | DEMO-02 | Slide content — Quantum Fundamentals deck | `needs-info` | **P2** | DEMO-01, ANIM-01, ANIM-02, ANIM-03 |
-| ANIM-01 | Qubit / Bloch sphere animation (CSS/JS) | `needs-validation` | **P1** | — |
-| ANIM-02 | Superposition animation (CSS/JS) | `needs-validation` | **P2** | ANIM-01 |
-| ANIM-03 | Entanglement / Bell state animation (CSS/JS) | `needs-validation` | **P2** | ANIM-01 |
+| ANIM-01 | Qubit / Bloch sphere animation (CSS/JS) | `done` | **P1** | — |
+| ANIM-02 | Superposition animation (CSS/JS) | `done` | **P2** | ANIM-01 |
+| ANIM-03 | Entanglement / Bell state animation (CSS/JS) | `done` | **P2** | ANIM-01 |
 | DOCS-01 | Documentation route in Next.js | `done` | **P2** | INFRA-01 |
 | DOCS-02 | IBM Bob setup guide (pt-BR + Ollama) | `done` | **P2** | INFRA-04 |
 | DOCS-03 | Workshop landing page (`/`) | `done` | **P2** | INFRA-01 |
@@ -200,27 +200,28 @@ Items are **ready** when all unknowns are resolved and acceptance criteria are c
 > `frontend/public/videos/` removed.)
 
 ### ANIM-01 · Qubit / Bloch sphere animation
-**Status:** `needs-validation` · **Priority:** `P1` · **Depends on:** —
-**Scope:** `frontend/src/components/animations/` · reference: `manim/scenes/qubit.py`
-- Reproduce `QubitScene` as CSS/JS: Bloch sphere showing `|0⟩ → superposition → |1⟩`
-- Register under `qubit` in `animations.ts`
-- **AC:** concept approved by user; renders in the `/demo` qubit slide; respects `prefers-reduced-motion`
+**Status:** `done` · **Priority:** `P1` · **Depends on:** —
+**Scope:** `frontend/src/components/animations/{bloch.ts,QubitAnimation.tsx}`
+- Canvas 3D projection (shared `bloch.ts`): gates as Bloch rotations, H → Z → H (H·Z·H = X), with a live P(0)/P(1) readout
+- Registered under `qubit` in `animations.ts`
+- **AC met:** approved; renders in the `/demo` qubit slide; reduced-motion still-frame
 
 ---
 
 ### ANIM-02 · Superposition animation
-**Status:** `needs-validation` · **Priority:** `P2` · **Depends on:** ANIM-01
-**Scope:** `frontend/src/components/animations/` · reference: `manim/scenes/superposition.py`
-- Coin analogy → probability amplitude → H gate on the Bloch sphere
-- **AC:** concept approved; registered under `superposition` in `animations.ts`
+**Status:** `done` · **Priority:** `P2` · **Depends on:** ANIM-01
+**Scope:** `frontend/src/components/animations/SuperpositionAnimation.tsx`
+- H|0⟩ → |+⟩ (animated), then instantaneous measurement collapse; running histogram converges to ~50/50
+- **AC met:** registered under `superposition`; renders in `/demo`
 
 ---
 
 ### ANIM-03 · Entanglement / Bell state animation
-**Status:** `needs-validation` · **Priority:** `P2` · **Depends on:** ANIM-01
-**Scope:** `frontend/src/components/animations/` · reference: `manim/scenes/entanglement.py`
-- Two qubits, CNOT gate, Bell state measurement correlation
-- **AC:** concept approved; registered under `entanglement` in `animations.ts`
+**Status:** `done` · **Priority:** `P2` · **Depends on:** ANIM-01
+**Scope:** `frontend/src/components/animations/EntanglementAnimation.tsx`
+- Two nodes A/B: H then CNOT (bond forms) → Bell state; correlated measurement → 4-bar histogram where only 00/11 fill
+- Not a Bloch sphere (entangled qubit is maximally mixed) — shows the correlation instead
+- **AC met:** registered under `entanglement`; renders in `/demo`
 
 ---
 
