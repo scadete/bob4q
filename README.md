@@ -89,8 +89,8 @@ See [`docs/i18n/en/bob-setup.md`](docs/i18n/en/bob-setup.md) for configuration i
 | 1 | Quantum Fundamentals | Qubits, superposition, entanglement |
 | 2 | First Circuit with Bob | Qiskit basics, AI assistance |
 | 3 | Simulator vs Real QPU | IBM Quantum backends |
-| 4 | Results & Visualization | Measurement, statistics |
-| 5 | Variational Algorithms | VQE, QAOA with AI guidance |
+| 4 | Quantum Advantage & Oracles | Bernstein-Vazirani, phase kickback, oracles |
+| 5 | Grover SAT Capstone | Grover's algorithm, SAT oracle, built by Bob |
 
 ## ✦ Tech Stack
 

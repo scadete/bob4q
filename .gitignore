@@ -22,3 +22,6 @@ venv/
 *.log
 .env
 .env.local
+
+# --- graphify ---
+graphify-out/
