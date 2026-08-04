@@ -170,9 +170,7 @@ export default function SlideShow({ slides }: SlideShowProps) {
         </div>
 
         <span style={{ fontSize: "0.875rem", color: "var(--cds-text-secondary)" }}>
-          {t("slide_counter")
-            .replace("{current}", String(current))
-            .replace("{total}", String(total))}
+          {t("slide_counter", { current, total })}
         </span>
 
         <div style={{ display: "flex", gap: "0.5rem" }}>
