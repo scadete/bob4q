@@ -20,6 +20,10 @@ export interface NotebookMeta {
   repoPath: string;
   title: string;
   description: string;
+  /** Pinned qiskit version for the "run locally" command. Defaults to "1.2.0". */
+  qiskitVersion?: string;
+  /** Extra `--with` packages beyond jupyterlab/qiskit/matplotlib/pylatexenc. */
+  extraDeps?: string[];
 }
 
 export interface NotebookCell {
@@ -39,6 +43,43 @@ export const NOTEBOOKS: NotebookMeta[] = [
     title: "Quantum Fundamentals",
     description:
       "Build your first qubit, put it in superposition, and create a Bell state — using Qiskit's StatevectorSampler.",
+  },
+  {
+    slug: "02-first-circuit-with-bob",
+    file: "02-first-circuit-with-bob.ipynb",
+    repoPath: "notebooks/02-first-circuit-with-bob.ipynb",
+    title: "First Circuit with IBM Bob",
+    description:
+      "Ask Bob to write and explain a Bell circuit, then run it through the FastAPI backend on the Aer simulator.",
+    extraDeps: ["httpx"],
+  },
+  {
+    slug: "03-simulator-vs-qpu",
+    file: "03-simulator-vs-qpu.ipynb",
+    repoPath: "notebooks/03-simulator-vs-qpu.ipynb",
+    title: "Simulator vs Real QPU",
+    description:
+      "Run the same circuit on Aer and, when an IBMQ_API_TOKEN is set, on real IBM Quantum hardware.",
+    extraDeps: ["httpx"],
+  },
+  {
+    slug: "04-quantum-advantage-oracles",
+    file: "04-quantum-advantage-oracles.ipynb",
+    repoPath: "notebooks/04-quantum-advantage-oracles.ipynb",
+    title: "Quantum Advantage & Oracles",
+    description:
+      "Recover a hidden bitstring classically (one query per bit) vs quantumly (one query, via phase kickback) — the Bernstein–Vazirani algorithm.",
+    extraDeps: ["httpx"],
+  },
+  {
+    slug: "05-grover-sat-capstone",
+    file: "05-grover-sat-capstone.ipynb",
+    repoPath: "notebooks/05-grover-sat-capstone.ipynb",
+    title: "Grover SAT Capstone",
+    description:
+      "Ask Bob to author a PhaseOracle for a boolean formula, run Grover on the Aer simulator, and verify the result against a classical brute-force search.",
+    qiskitVersion: "2.0.0",
+    extraDeps: ["httpx", "qiskit-algorithms==0.4.0"],
   },
 ];
 

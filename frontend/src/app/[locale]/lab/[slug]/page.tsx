@@ -78,8 +78,14 @@ export default async function NotebookPage({
     )
   );
 
-  const runCommand = `uv run --with jupyterlab --with qiskit==1.2.0 --with matplotlib --with pylatexenc \\
-  jupyter lab ${meta.repoPath}`;
+  const deps = [
+    "jupyterlab",
+    `qiskit==${meta.qiskitVersion ?? "1.2.0"}`,
+    "matplotlib",
+    "pylatexenc",
+    ...(meta.extraDeps ?? []),
+  ];
+  const runCommand = `uv run ${deps.map((d) => `--with ${d}`).join(" ")} \\\n  jupyter lab ${meta.repoPath}`;
 
   return (
     <main style={{ maxWidth: "820px", margin: "0 auto", padding: "2rem 1rem" }}>
