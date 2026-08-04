@@ -39,7 +39,8 @@ async def explain_circuit(code: str) -> str:
     """MCP tool: explain a Qiskit circuit using Qiskit Code Assistant via Ollama."""
     prompt = (
         "You are Qiskit Code Assistant, an expert in quantum computing and Qiskit. "
-        "Explain the following Qiskit circuit code clearly and concisely for a workshop participant:\n\n"
+        "Explain the following Qiskit circuit code clearly and concisely for a "
+        "workshop participant:\n\n"
         f"```python\n{code}\n```"
     )
     async with httpx.AsyncClient(timeout=60.0) as client:
@@ -63,7 +64,9 @@ async def explain_circuit(code: str) -> str:
 TOOLS: list[Tool] = [
     Tool(
         name="explain_circuit",
-        description="Explain a Qiskit circuit using Qiskit Code Assistant (via Ollama Granite model).",
+        description=(
+            "Explain a Qiskit circuit using Qiskit Code Assistant (via Ollama Granite model)."
+        ),
         inputSchema={
             "type": "object",
             "properties": {
@@ -152,7 +155,9 @@ def start_http(port: int) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="bob4q MCP Server")
-    parser.add_argument("--http", action="store_true", help="Use HTTP SSE transport instead of stdio")
+    parser.add_argument(
+        "--http", action="store_true", help="Use HTTP SSE transport instead of stdio"
+    )
     parser.add_argument("--port", type=int, default=8765, help="Port for HTTP transport")
     return parser.parse_args()
 

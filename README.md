@@ -38,6 +38,26 @@ cd mcp-server && uv run server.py
 cd backend && uv run uvicorn main:app --reload
 ```
 
+## ✦ Running Tests
+
+```bash
+# Frontend (frontend/)
+pnpm --filter frontend lint
+pnpm --filter frontend test
+pnpm --filter frontend build
+
+# Backend (backend/)
+cd backend && uv sync && uv run ruff check . && uv run pytest
+
+# MCP server (mcp-server/)
+cd mcp-server && uv sync && uv run ruff check .
+
+# Notebooks (run locally from repo root)
+uv run --with jupyter --with qiskit==1.2.0 --with matplotlib --with pylatexenc --with nbclient \
+  jupyter execute notebooks/01-quantum-fundamentals.ipynb
+# (repeat for 02-05; swap `jupyter execute` for `jupyter lab` to open interactively)
+```
+
 ## ✦ Project Structure
 
 ```
