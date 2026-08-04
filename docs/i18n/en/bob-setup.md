@@ -66,6 +66,12 @@ This starts the MCP server in **stdio mode** — IBM Bob will automatically conn
 
 ## 4. Configure Bob
 
+The MCP server (`explain_circuit`) can run **locally** on your own machine, or **remotely** on a
+shared host — same tool either way, just a different transport. Point Bob's config at whichever
+fits your setup.
+
+### Local (stdio) — one server per participant
+
 Open VS Code settings (`Cmd/Ctrl + ,`) and add the MCP server configuration:
 
 ```json
@@ -82,15 +88,39 @@ Open VS Code settings (`Cmd/Ctrl + ,`) and add the MCP server configuration:
 
 Replace `/path/to/bob4q` with the actual path to this repository.
 
+### Remote (HTTP) — one shared server for a room
+
+Start the server in HTTP mode on the shared host (see `mcp-server/server.py`'s `--http` flag):
+
+```bash
+cd mcp-server
+uv run server.py --http --port 8765
+```
+
+Then point Bob at the remote URL instead of a local command:
+
+```json
+{
+  "bob.mcpServers": {
+    "bob4q": {
+      "url": "http://<shared-host>:8765/sse"
+    }
+  }
+}
+```
+
+This is the option to use when Ollama/Granite is too heavy to run on every participant's laptop
+— host one instance and have everyone's Bob connect to it.
+
 ---
 
 ## 5. Verify the Connection
 
 Open Bob in VS Code and ask it:
 
-> "Use the `list_backends` tool to show available quantum backends."
+> "Use the `explain_circuit` tool to explain this circuit: `qc = QuantumCircuit(1); qc.h(0)`."
 
-You should see `["aer_simulator"]` (and IBM Quantum backends if your API token is configured).
+You should get back a plain-language explanation of the Hadamard gate.
 
 ---
 

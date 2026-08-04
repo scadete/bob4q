@@ -66,6 +66,12 @@ Isso inicia o servidor MCP no modo **stdio** — o IBM Bob irá se conectar auto
 
 ## 4. Configurar o Bob
 
+O servidor MCP (`explain_circuit`) pode rodar **localmente** na sua própria máquina, ou
+**remotamente** em um host compartilhado — a mesma ferramenta em ambos os casos, só muda o
+transporte. Aponte a configuração do Bob para o que fizer mais sentido no seu contexto.
+
+### Local (stdio) — um servidor por participante
+
 Abra as configurações do VS Code (`Cmd/Ctrl + ,`) e adicione a configuração do servidor MCP:
 
 ```json
@@ -82,15 +88,40 @@ Abra as configurações do VS Code (`Cmd/Ctrl + ,`) e adicione a configuração 
 
 Substitua `/caminho/para/bob4q` pelo caminho real deste repositório.
 
+### Remoto (HTTP) — um servidor compartilhado para a sala
+
+Inicie o servidor em modo HTTP no host compartilhado (veja a flag `--http` em
+`mcp-server/server.py`):
+
+```bash
+cd mcp-server
+uv run server.py --http --port 8765
+```
+
+Depois aponte o Bob para a URL remota em vez de um comando local:
+
+```json
+{
+  "bob.mcpServers": {
+    "bob4q": {
+      "url": "http://<host-compartilhado>:8765/sse"
+    }
+  }
+}
+```
+
+Essa é a opção a usar quando o Ollama/Granite é pesado demais para rodar no laptop de cada
+participante — hospede uma instância e conecte o Bob de todos a ela.
+
 ---
 
 ## 5. Verificar a Conexão
 
 Abra o Bob no VS Code e pergunte:
 
-> "Use a ferramenta `list_backends` para mostrar os backends quânticos disponíveis."
+> "Use a ferramenta `explain_circuit` para explicar este circuito: `qc = QuantumCircuit(1); qc.h(0)`."
 
-Você deverá ver `["aer_simulator"]` (e backends IBM Quantum se o token de API estiver configurado).
+Você deverá receber de volta uma explicação em linguagem natural sobre a porta Hadamard.
 
 ---
 
