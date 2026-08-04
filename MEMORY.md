@@ -9,7 +9,9 @@
 
 ## Key Decisions
 - [STACK] Next.js 14 App Router + Carbon Design System → workshop-friendly, IBM-native UI
-- [STACK] FastAPI → Python-native, matches Qiskit ecosystem
+- [STACK] FastAPI → Python-native, matches Qiskit ecosystem — **REVERSED** (2026-08-04): removed
+  once we confirmed nothing depended on it as a live server; its logic was ported to
+  `notebooks/lib/backend.py` and now runs in-process per notebook. See BACKLOG INFRA-02.
 - [STACK] pnpm workspaces → single `pnpm install` at root for all JS
 - [STACK] uv per Python pkg → fast installs, reproducible envs
 - [MCP] Custom Python MCP server wraps Qiskit + Qiskit Code Assistant
@@ -23,7 +25,8 @@
 - [WORKSHOP] Format: half-day (3–4 h), lean, 2–3 core modules, live demo-driven
 - [LAB] Pivoted away from embedded JupyterLite (2026-07-30): too much machinery (70M Pyodide bundle, COOP/COEP, build step). Notebooks now run locally in Jupyter; `/lab` presents them read-only with repo path + a `uv run … jupyter lab` command. Registry/loader: `frontend/src/lib/notebooks.ts`
 - [LAB] Notebooks use helper modules from `notebooks/lib/` to keep cell code minimal
-- [LAB] Simulation via `qiskit.primitives.StatevectorSampler` (no Aer); optional real QPU still via FastAPI backend
+- [LAB] Simulation via `qiskit.primitives.StatevectorSampler` (no Aer); optional real QPU via
+  `qiskit_ibm_runtime`, run in-process in `notebooks/lib/backend.py` (no FastAPI backend)
 - [DEMO] `/demo` route = presenter-driven full-screen slideshow (Carbon layout + CSS/JS animations); facilitator controls, participants watch
 
 ## Status
@@ -31,10 +34,10 @@
 - [x] Folder scaffolding created
 - [x] Frontend bootstrapped (Next.js 14, Carbon g100, next-intl en+pt-BR, vitest)
 - [x] MCP server implementation complete (4 tools, stdio + HTTP SSE)
-- [x] Backend API implemented (routers/circuit.py, routers/backends.py)
+- [x] Backend API implemented, then removed (2026-08-04) — logic ported to `notebooks/lib/backend.py` (in-process, no server)
 - [x] Manim reference scenes exist (QubitScene + SuperpositionScene + EntanglementScene) — spec for CSS/JS animations, not rendered
 - [x] CSS/JS animation components (qubit, superposition, entanglement) — built on shared bloch.ts 3D helper; registered in lib/animations.ts, shown in /demo
-- [x] Dockerfiles + Compose stack (frontend/backend/mcp/ollama services)
+- [x] Dockerfiles + Compose stack (frontend/mcp/ollama services — backend service removed 2026-08-04)
 - [x] Docs/i18n structure created (en + pt-BR, quantum-fundamentals + bob-setup)
 - [x] Workshop setup scripts complete (check-prereqs.sh/.ps1); render-all scripts removed with the video pivot
 - [x] CI pipeline (ci.yml + build.yml)
@@ -51,7 +54,7 @@
 
 ## Blockers / Open Questions
 - ghcr.io org name TBD → placeholder `YOUR_ORG` used
-- Notebooks use `qiskit.primitives.StatevectorSampler` (no Aer dependency); optional Aer/real QPU only via FastAPI backend
+- Notebooks use `qiskit.primitives.StatevectorSampler` (no Aer dependency) for notebook 01; optional Aer/real QPU (notebooks 02/03/05) run in-process via `notebooks/lib/backend.py` — no FastAPI backend
 - Workshop target locales TBD → starting with en, pt-BR
 
 ## References

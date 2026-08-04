@@ -9,7 +9,8 @@
 
 ### Coupling to watch
 - Adding an animation requires: a CSS/JS React component + an entry in `frontend/src/lib/animations.ts` (optionally a `manim/scenes/*.py` reference) — no render/copy step
-- New MCP tool requires: `server.py` registration + FastAPI backend endpoint that invokes it + frontend lab UI binding
+- New MCP tool requires: `server.py` registration (stdio + HTTP) only — it's independent of
+  circuit execution, which lives in `notebooks/lib/backend.py` and runs in-process, no server
 - New workshop module requires: docs in BOTH `docs/i18n/en/` AND `docs/i18n/pt-BR/` + route in Next.js + navigation update
 
 ### Deployment topology

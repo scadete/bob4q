@@ -1,7 +1,7 @@
 """
 bob4q MCP Server — wraps the local Qiskit Code Assistant (Granite via Ollama).
 
-Circuit execution is handled by the FastAPI backend, not here.
+Circuit execution happens in-process inside each notebook (notebooks/lib/backend.py), not here.
 
 Transport modes:
   stdio (default) — IBM Bob spawns this as a subprocess

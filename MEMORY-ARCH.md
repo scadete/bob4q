@@ -12,13 +12,12 @@ Workshop Participant
   ┌────┴──────────────┐
   │                   │
   ▼                   ▼
-[FastAPI backend]  [next-intl]
-  /api/circuit       i18n UI
+[Jupyter kernel]   [next-intl]
+  notebooks/lib/      i18n UI
+  backend.py (Qiskit,
+  in-process)
        │
-  ┌────┴──────────────┐
-  │                   │
-  ▼                   ▼
-[Qiskit]
+       ▼
 [MCP server]
   stdio/HTTP
        │
@@ -30,12 +29,19 @@ Workshop Participant
  real backend   (llama-cpp/ollama)
 ```
 
+> **2026-08-04:** there is no FastAPI backend. It was built, then removed once we confirmed
+> nothing depended on it as a live server. See BACKLOG INFRA-02.
+
 ## Data Flow — Circuit Execution
-1. User builds circuit in frontend lab UI
-2. POST `/api/circuit/run` → FastAPI backend
-3. Backend calls MCP tool `run_circuit` via MCP client
-4. MCP server executes via Qiskit (simulator or real backend)
-5. Result (counts, statevector) returned as JSON → visualized in frontend
+1. User (workshop participant) runs a cell in their own notebook
+2. `run_via_backend(code, backend=...)` (`notebooks/lib/backend.py`) execs the circuit code
+   in-process, in the notebook's own kernel
+3. `aer_simulator` → runs directly via `qiskit_aer.AerSimulator`; any other backend name →
+   routes through `qiskit_ibm_runtime.QiskitRuntimeService`/`SamplerV2` to real IBM Quantum
+   hardware (requires `IBMQ_API_TOKEN`)
+4. Result (counts dict) returned directly to the notebook cell — no HTTP round trip
+5. Separately, `explain_with_bob(code)` calls the MCP server's `explain_circuit` tool over
+   HTTP (the MCP server is the one thing that stays a separate long-lived process)
 
 ## Data Flow — Animation
 1. A `manim/scenes/*.py` file documents what the animation should depict (reference spec)

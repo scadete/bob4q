@@ -1,15 +1,18 @@
 """
 notebooks/lib/backend.py
-Thin HTTP clients for the workshop's live services (run locally in Jupyter):
+Circuit execution helpers (run locally in Jupyter — no server involved).
 
-- FastAPI circuit execution backend  (default http://localhost:8000)
-- The bob4q MCP server in HTTP mode  (default http://localhost:8765)
-
-Both helpers degrade gracefully (return None) if the service isn't running,
-so notebooks can fall back to a local Qiskit simulation.
+- run_via_backend / list_backends: execute a Qiskit circuit in-process on the
+  local Aer simulator, or on a real IBM Quantum backend if ``IBMQ_API_TOKEN``
+  is set.
+- explain_with_bob: still an HTTP client — it calls the bob4q MCP server's
+  ``explain_circuit`` tool, a separate long-lived process (unlike circuit
+  execution, which doesn't need one).
 """
 
 from __future__ import annotations
+
+import os
 
 import httpx
 
@@ -17,54 +20,67 @@ import httpx
 def run_via_backend(
     code: str,
     backend: str = "aer_simulator",
-    base_url: str = "http://localhost:8000",
     timeout: float = 30.0,
 ) -> dict[str, int] | None:
-    """Run circuit *code* (must assign a ``QuantumCircuit`` to ``qc``) through
-    the FastAPI backend's ``/api/circuit/run``.
+    """Execute circuit *code* (must assign a ``QuantumCircuit`` to ``qc``) on *backend*.
 
     Args:
         code: Python source that assigns a ``QuantumCircuit`` to ``qc``.
-        backend: Backend name, e.g. ``"aer_simulator"`` or an IBM Quantum
-            backend name returned by :func:`list_backends`.
-        base_url: FastAPI backend base URL.
-        timeout: Seconds to wait for the run + result round trip.
+        backend: ``"aer_simulator"`` or an IBM Quantum backend name returned
+            by :func:`list_backends`.
+        timeout: Seconds to wait for a real-hardware job to complete
+            (ignored for the simulator).
 
     Returns:
-        The counts dict, or ``None`` if the backend is unreachable or the run
-        failed.
+        The counts dict, or ``None`` if the circuit code is invalid, or the
+        real-hardware run fails or doesn't complete in time.
     """
     try:
-        with httpx.Client(timeout=timeout) as client:
-            run_resp = client.post(
-                f"{base_url}/api/circuit/run",
-                json={"code": code, "backend": backend},
-            )
-            run_resp.raise_for_status()
-            run_data = run_resp.json()
-            if run_data["status"] != "done":
-                return None
+        from qiskit import QuantumCircuit
 
-            result_resp = client.get(f"{base_url}/api/circuit/result/{run_data['job_id']}")
-            result_resp.raise_for_status()
-            return result_resp.json().get("counts")
-    except httpx.HTTPError:
+        local_ns: dict[str, object] = {}
+        exec(code, {"__builtins__": __builtins__}, local_ns)  # noqa: S102
+        qc = local_ns.get("qc")
+        if not isinstance(qc, QuantumCircuit):
+            raise ValueError("Circuit code must assign a QuantumCircuit to 'qc'")
+
+        if backend == "aer_simulator":
+            from qiskit import transpile
+            from qiskit_aer import AerSimulator
+
+            simulator = AerSimulator()
+            compiled = transpile(qc, simulator)
+            result = simulator.run(compiled, shots=1024).result()
+            return dict(result.get_counts())
+
+        from qiskit import transpile
+        from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2
+
+        service = QiskitRuntimeService(token=os.getenv("IBMQ_API_TOKEN", ""))
+        real_backend = service.backend(backend)
+        compiled = transpile(qc, real_backend)
+        job = SamplerV2(mode=real_backend).run([compiled])
+        pub_result = job.result(timeout=timeout)[0]
+        creg_name = qc.cregs[0].name
+        return dict(getattr(pub_result.data, creg_name).get_counts())
+    except Exception:  # noqa: BLE001
         return None
 
 
-def list_backends(base_url: str = "http://localhost:8000", timeout: float = 5.0) -> list[str]:
+def list_backends() -> list[str]:
     """List available backends: ``aer_simulator`` plus any IBM Quantum
-    backends the server has a token for.
+    backends when ``IBMQ_API_TOKEN`` is set."""
+    backends = ["aer_simulator"]
+    token = os.getenv("IBMQ_API_TOKEN", "")
+    if token:
+        try:
+            from qiskit_ibm_runtime import QiskitRuntimeService
 
-    Returns ``["aer_simulator"]`` if the backend is unreachable.
-    """
-    try:
-        with httpx.Client(timeout=timeout) as client:
-            resp = client.get(f"{base_url}/api/backends")
-            resp.raise_for_status()
-            return resp.json()
-    except httpx.HTTPError:
-        return ["aer_simulator"]
+            service = QiskitRuntimeService(token=token)
+            backends += [b.name for b in service.backends()]
+        except Exception:  # noqa: BLE001
+            pass
+    return backends
 
 
 def explain_with_bob(

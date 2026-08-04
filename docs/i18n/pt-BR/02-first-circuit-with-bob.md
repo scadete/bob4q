@@ -37,16 +37,13 @@ qc.measure([0, 1], [0, 1])
 
 ## 3. Execute
 
-Esta é a primeira vez no workshop em que um circuito roda em outro lugar além do kernel do seu
-próprio notebook. O **backend FastAPI** (`backend/routers/circuit.py`) o executa no
-**simulador Aer**:
+O circuito roda in-process, no próprio kernel do seu notebook — `run_via_backend()`
+(`notebooks/lib/backend.py`) o executa diretamente no **simulador Aer**, sem nenhum servidor
+envolvido:
 
-```
-POST /api/circuit/run   { "code": "...", "backend": "aer_simulator" }
-  → { "job_id": "...", "status": "done" }
-
-GET  /api/circuit/result/{job_id}
-  → { "counts": { "00": 512, "11": 512 } }
+```python
+run_via_backend(code, backend="aer_simulator")
+  → {"00": 512, "11": 512}
 ```
 
 Este é o mesmo caminho que a demonstração ao vivo do IBM Bob usa — o circuito que o Bob escreve é

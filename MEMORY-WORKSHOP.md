@@ -19,7 +19,7 @@
 ## Workshop Modules (half-day scope — 2–3 modules)
 1. **Quantum Fundamentals** — qubits, superposition, entanglement (CSS/JS animations + slides)
 2. **First Circuit with IBM Bob** — Qiskit run locally in Jupyter, Bob assistance via MCP
-3. **Simulator vs Real QPU** — run in Aer (browser), escalate to IBM Quantum via "Run on QPU" button
+3. **Simulator vs Real QPU** — run in Aer locally in Jupyter, escalate to real IBM Quantum via `run_via_backend()` in-process (no server/button)
 
 > Modules 4–5 (results visualization, variational algorithms) are backlogged for future workshops.
 
@@ -28,7 +28,7 @@
 - WASM/Pyodide runtime — zero-install for participants
 - **Aer-wasm is NOT available in Pyodide** — use `qiskit.primitives.StatevectorSampler` for in-browser simulation
 - Notebooks in `notebooks/` — shared helper code in `notebooks/lib/` (imported in cells to keep noise low)
-- Real QPU: separate "Run on QPU" button → FastAPI backend → IBM Quantum
+- Real QPU: `run_via_backend()` in `notebooks/lib/backend.py` calls IBM Quantum directly, in-process — no server (FastAPI backend removed 2026-08-04, see BACKLOG INFRA-02)
 
 ## LAB-01 — JupyterLite Feasibility Spike Findings
 
@@ -54,7 +54,7 @@
 **Chosen path:** `qiskit.primitives.StatevectorSampler` — pure Python, ships with `qiskit` core,
 produces identical measurement counts for the circuits in the workshop.
 The notebook already documents this limitation for participants.
-Full Aer / real QPU → FastAPI backend via "Run on QPU" button.
+Full Aer / real QPU → `run_via_backend()`, in-process, no FastAPI backend (removed).
 
 ### COOP/COEP headers
 `next.config.ts` already sets `Cross-Origin-Opener-Policy: same-origin` and

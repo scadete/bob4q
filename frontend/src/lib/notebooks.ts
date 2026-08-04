@@ -50,8 +50,8 @@ export const NOTEBOOKS: NotebookMeta[] = [
     repoPath: "notebooks/02-first-circuit-with-bob.ipynb",
     title: "First Circuit with IBM Bob",
     description:
-      "Ask Bob to write and explain a Bell circuit, then run it through the FastAPI backend on the Aer simulator.",
-    extraDeps: ["httpx"],
+      "Ask Bob to write and explain a Bell circuit, then run it locally on the Aer simulator.",
+    extraDeps: ["httpx", "qiskit-aer"],
   },
   {
     slug: "03-simulator-vs-qpu",
@@ -60,7 +60,7 @@ export const NOTEBOOKS: NotebookMeta[] = [
     title: "Simulator vs Real QPU",
     description:
       "Run the same circuit on Aer and, when an IBMQ_API_TOKEN is set, on real IBM Quantum hardware.",
-    extraDeps: ["httpx"],
+    extraDeps: ["httpx", "qiskit-aer", "qiskit-ibm-runtime"],
   },
   {
     slug: "04-quantum-advantage-oracles",
@@ -79,7 +79,7 @@ export const NOTEBOOKS: NotebookMeta[] = [
     description:
       "Ask Bob to author a PhaseOracle for a boolean formula, run Grover on the Aer simulator, and verify the result against a classical brute-force search.",
     qiskitVersion: "2.0.0",
-    extraDeps: ["httpx", "qiskit-algorithms==0.4.0"],
+    extraDeps: ["httpx", "qiskit-algorithms==0.4.0", "qiskit-aer"],
   },
 ];
 

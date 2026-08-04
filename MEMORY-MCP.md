@@ -8,7 +8,9 @@
 
 ## Scope
 - The MCP server **only wraps the local Qiskit Code Assistant** (Granite via Ollama). No other use for now.
-- Circuit execution and backend listing live in the **FastAPI backend** (`/api/circuit/run`, `/api/backends`) — NOT the MCP server.
+- Circuit execution and backend listing live in `notebooks/lib/backend.py`, run in-process by
+  each notebook's own kernel — NOT the MCP server. (The FastAPI backend that used to own this
+  was removed 2026-08-04; see BACKLOG INFRA-02.)
 
 ## Qiskit Code Assistant Integration
 - Qiskit Code Assistant = local model only (granite-based), no cloud API

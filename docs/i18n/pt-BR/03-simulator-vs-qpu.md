@@ -8,25 +8,26 @@ decoerência e erro de porta reais.
 
 ## 1. Quais backends estão disponíveis?
 
-```
-GET /api/backends
+```python
+list_backends()
   → ["aer_simulator"]                                  # sem IBMQ_API_TOKEN configurado
   → ["aer_simulator", "ibm_brisbane", "ibm_kyiv", ...]  # com token configurado
 ```
 
-O servidor de backend (`backend/routers/backends.py`) sempre lista `aer_simulator`. Ele
-adiciona backends reais do IBM Quantum apenas quando uma variável de ambiente `IBMQ_API_TOKEN`
-está configurada (veja `.env.example`).
+`list_backends()` (`notebooks/lib/backend.py`) sempre lista `aer_simulator`. Ela adiciona
+backends reais do IBM Quantum apenas quando uma variável de ambiente `IBMQ_API_TOKEN` está
+definida no shell usado para iniciar o Jupyter (veja `.env.example`).
 
 ---
 
 ## 2. Mesmo código, backend diferente
 
-Exatamente o mesmo circuito roda em qualquer um dos dois alvos — apenas o campo `backend` muda:
+Exatamente o mesmo circuito roda em qualquer um dos dois alvos — apenas o argumento `backend`
+muda:
 
-```
-POST /api/circuit/run   { "code": "...", "backend": "aer_simulator" }
-POST /api/circuit/run   { "code": "...", "backend": "ibm_brisbane" }
+```python
+run_via_backend(code, backend="aer_simulator")
+run_via_backend(code, backend="ibm_brisbane")
 ```
 
 ---

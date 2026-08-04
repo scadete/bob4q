@@ -18,7 +18,6 @@ A full-stack, workshop-ready environment where participants learn quantum comput
 docker compose up
 # frontend → http://localhost:3000
 # MCP server → http://localhost:8765 (HTTP SSE)
-# backend API → http://localhost:8000
 ```
 
 ### Option B — Local development
@@ -33,10 +32,10 @@ pnpm dev
 
 # MCP server (separate terminal)
 cd mcp-server && uv run server.py
-
-# Backend API (separate terminal)
-cd backend && uv run uvicorn main:app --reload
 ```
+
+Circuit execution happens in-process inside each notebook (via `notebooks/lib/backend.py`) —
+there's no separate server for it.
 
 ## ✦ Running Tests
 
@@ -46,16 +45,15 @@ pnpm --filter frontend lint
 pnpm --filter frontend test
 pnpm --filter frontend build
 
-# Backend (backend/)
-cd backend && uv sync && uv run ruff check . && uv run pytest
-
 # MCP server (mcp-server/)
 cd mcp-server && uv sync && uv run ruff check .
 
 # Notebooks (run locally from repo root)
-uv run --with jupyter --with qiskit==1.2.0 --with matplotlib --with pylatexenc --with nbclient \
+uv run --with jupyter --with qiskit==1.2.0 --with qiskit-aer --with matplotlib \
+  --with pylatexenc --with nbclient \
   jupyter execute notebooks/01-quantum-fundamentals.ipynb
-# (repeat for 02-05; swap `jupyter execute` for `jupyter lab` to open interactively)
+# (repeat for 02-05; swap `jupyter execute` for `jupyter lab` to open interactively —
+# see each notebook's intro cell for its exact --with flags)
 ```
 
 ## ✦ Project Structure
@@ -63,7 +61,6 @@ uv run --with jupyter --with qiskit==1.2.0 --with matplotlib --with pylatexenc -
 ```
 bob4q/
 ├── frontend/        # Next.js 14 + Carbon Design System
-├── backend/         # FastAPI — circuit execution API
 ├── mcp-server/      # Qiskit MCP server (stdio + HTTP)
 ├── manim/           # Animation scenes (Python) — reference spec for CSS/JS animations
 ├── docs/            # Workshop documentation (i18n Markdown)
@@ -101,7 +98,7 @@ See [`docs/i18n/en/bob-setup.md`](docs/i18n/en/bob-setup.md) for configuration i
 |---|---|
 | Frontend | Next.js 14, TypeScript, `@carbon/react` |
 | Animations | CSS/JS React components (Manim scenes as reference) |
-| Backend | FastAPI, Python 3.11+ |
+| Circuit execution | Qiskit, run in-process inside each notebook (`notebooks/lib/backend.py`) |
 | MCP Server | Python MCP, Qiskit, local LLM |
 | i18n (UI) | next-intl |
 | i18n (Docs) | Markdown per locale |

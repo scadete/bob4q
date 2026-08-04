@@ -56,9 +56,10 @@ grover = Grover(iterations=n_iterations)
 qc = grover.construct_circuit(problem, power=n_iterations, measurement=True)
 ```
 
-This runs through the same `/api/circuit/run` → Aer path as every other module — just with a
-bigger circuit. The backend needs `qiskit-algorithms` installed alongside `qiskit` for `Grover`
-and `AmplificationProblem` to be importable (see `backend/pyproject.toml`).
+This runs through the same `run_via_backend()` → Aer path as every other module — just with a
+bigger circuit. Your notebook environment needs `qiskit-algorithms` installed alongside
+`qiskit` for `Grover`/`AmplificationProblem` to be importable (covered by the `%pip install`
+cell above).
 
 ---
 

@@ -8,25 +8,25 @@ decoherence and gate error.
 
 ## 1. What backends are available?
 
-```
-GET /api/backends
+```python
+list_backends()
   → ["aer_simulator"]                                  # no IBMQ_API_TOKEN set
   → ["aer_simulator", "ibm_brisbane", "ibm_kyiv", ...]  # token set
 ```
 
-The backend server (`backend/routers/backends.py`) always lists `aer_simulator`. It adds real
-IBM Quantum backends only when an `IBMQ_API_TOKEN` environment variable is configured (see
-`.env.example`).
+`list_backends()` (`notebooks/lib/backend.py`) always lists `aer_simulator`. It adds real
+IBM Quantum backends only when an `IBMQ_API_TOKEN` environment variable is set in the shell
+that launched Jupyter (see `.env.example`).
 
 ---
 
 ## 2. Same code, different backend
 
-The exact same circuit runs on either target — only the `backend` field changes:
+The exact same circuit runs on either target — only the `backend` argument changes:
 
-```
-POST /api/circuit/run   { "code": "...", "backend": "aer_simulator" }
-POST /api/circuit/run   { "code": "...", "backend": "ibm_brisbane" }
+```python
+run_via_backend(code, backend="aer_simulator")
+run_via_backend(code, backend="ibm_brisbane")
 ```
 
 ---

@@ -49,7 +49,7 @@ const slides: Slide[] = [
   },
   {
     title: "Run & read it",
-    body: "The code Bob wrote runs through FastAPI's /api/circuit/run on the Aer simulator. The result: a counts histogram peaked at 00 and 11 — Bob reads it back as \"these two qubits are correlated, never 01 or 10.\"",
+    body: "The code Bob wrote runs locally on the Aer simulator. The result: a counts histogram peaked at 00 and 11 — Bob reads it back as \"these two qubits are correlated, never 01 or 10.\"",
     animation: "resultsHistogram",
   },
   {
@@ -64,7 +64,7 @@ const slides: Slide[] = [
   },
   {
     title: "Simulator vs real QPU",
-    body: "Everything so far ran on Aer, a classical simulator — fast, free, noiseless. IBM Quantum backends are real superconducting qubits: same Qiskit code, but subject to real decoherence and gate error. FastAPI picks the backend; with an IBMQ_API_TOKEN set, the same circuit can target real hardware.",
+    body: "Everything so far ran on Aer, a classical simulator — fast, free, noiseless. IBM Quantum backends are real superconducting qubits: same Qiskit code, but subject to real decoherence and gate error. The same run_via_backend() call picks the target; with an IBMQ_API_TOKEN set, the same circuit can target real hardware.",
   },
   {
     title: "The oracle & search",

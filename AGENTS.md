@@ -10,7 +10,7 @@ This file provides guidance to agents when working with code in this repository.
 |---|---|
 | Frontend | Next.js 14 (App Router) + Carbon Design System (`@carbon/react`) |
 | Math/Animations | CSS/JS React components (Manim scenes in `manim/` are the reference spec, not rendered) |
-| Backend/API | FastAPI (Python) — quantum circuit execution |
+| Circuit execution | Qiskit, run in-process inside each notebook (`notebooks/lib/backend.py`) — no server |
 | MCP Server | Custom Python MCP server wrapping the local Qiskit Code Assistant (Granite via Ollama) — stdio or HTTP |
 | i18n | `next-intl` — locale files in `frontend/messages/{locale}.json` |
 | Package mgr (JS) | pnpm (workspaces) |
@@ -35,13 +35,6 @@ uv run server.py --http   # HTTP transport for remote/demo use
 podman compose up mcp     # containerized (Docker Compose works too)
 ```
 
-### Backend API (run from `backend/`)
-```bash
-uv run uvicorn main:app --reload   # dev server :8000
-uv run pytest                      # all tests
-uv run pytest tests/test_foo.py    # single test
-```
-
 ### Animations
 Animations are **CSS/JS React components**, not rendered Manim video. The
 `manim/scenes/*.py` files are the reference spec for what each animation depicts
@@ -55,6 +48,9 @@ user before implementing it.
 uv run --with jupyterlab --with qiskit==1.2.0 --with matplotlib --with pylatexenc \
   jupyter lab notebooks/01-quantum-fundamentals.ipynb
 # The /lab route presents them read-only; the "Run locally" panel shows this command.
+# Notebooks 02/03/05 also need --with qiskit-aer (circuit execution runs in-process via
+# notebooks/lib/backend.py, no server); 03 additionally needs --with qiskit-ibm-runtime for
+# the real-QPU path. See each notebook's intro cell for its exact command.
 ```
 
 ### Root
@@ -97,10 +93,10 @@ Always import from `@carbon/react`, never `carbon-components-react`. Use Carbon 
 Both must be updated together when adding user-facing content.
 
 ### Qiskit Code Assistant (local model only)
-Qiskit Code Assistant runs only as a local model (no cloud API), served via Ollama. The MCP server's sole purpose is to wrap it (tool: `explain_circuit`); circuit execution and backend listing live in the FastAPI backend (`/api/circuit/run`, `/api/backends`), not the MCP server. For workshops: participants either run locally or pull the pre-built container image `ghcr.io/YOUR_ORG/bob4q-mcp:latest` via Podman or Docker.
+Qiskit Code Assistant runs only as a local model (no cloud API), served via Ollama. The MCP server's sole purpose is to wrap it (tool: `explain_circuit`) — it does not execute circuits. Circuit execution and backend listing (`run_via_backend`, `list_backends`) live in `notebooks/lib/backend.py` and run in-process inside each notebook's own kernel, not behind any server. For workshops: participants either run the MCP server locally or pull the pre-built container image `ghcr.io/YOUR_ORG/bob4q-mcp:latest` via Podman or Docker.
 
 ### Python env isolation
-Each Python package (`mcp-server/`, `backend/`, `manim/`) has its own `pyproject.toml` + `uv.lock`. Never share venvs across packages.
+Each Python package (`mcp-server/`, `manim/`) has its own `pyproject.toml` + `uv.lock`. Notebooks have no dedicated pyproject — their deps are declared per-notebook via `uv run --with ...` (see each notebook's intro cell). Never share venvs across packages.
 
 ## Code Style
 
@@ -113,13 +109,12 @@ Each Python package (`mcp-server/`, `backend/`, `manim/`) has its own `pyproject
 ### Python
 - Type hints required on all public functions
 - `ruff` for linting + formatting (configured in each `pyproject.toml`)
-- Async FastAPI handlers throughout; use `httpx.AsyncClient` not `requests`
+- Async handlers for I/O in the MCP server; use `httpx.AsyncClient` not `requests`
 
 ## Repo Layout
 ```
 bob4q/
 ├── frontend/          # Next.js app
-├── backend/           # FastAPI quantum API
 ├── mcp-server/        # Qiskit MCP server (stdio + HTTP)
 ├── manim/             # Animation scenes (Python)
 ├── docs/              # Workshop docs (i18n Markdown)

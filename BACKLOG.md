@@ -2,7 +2,7 @@
 
 Items are **ready** when all unknowns are resolved and acceptance criteria are clear.
 
-**Status:** `ready` | `needs-info` | `in-progress` | `done`
+**Status:** `ready` | `needs-info` | `in-progress` | `done` | `removed`
 **Priority:** `P1` critical path / blocks others · `P2` needed before demo · `P3` nice-to-have / parallel
 
 ---
@@ -12,16 +12,16 @@ Items are **ready** when all unknowns are resolved and acceptance criteria are c
 | ID | Title | Status | Priority | Depends on |
 |---|---|:---:|:---:|---|
 | INFRA-01 | Bootstrap Next.js frontend | `done` | **P1** | — |
-| INFRA-02 | Bootstrap FastAPI backend | `done` | **P1** | — |
+| INFRA-02 | Bootstrap FastAPI backend — REMOVED | `removed` | **P1** | — |
 | INFRA-03 | MCP server — core implementation | `done` | **P1** | — |
 | INFRA-04 | Ollama integration + setup docs | `done` | **P1** | INFRA-03 |
-| INFRA-05 | Podman Compose — full stack smoke test | `done` | **P2** | INFRA-01, INFRA-02, INFRA-03 |
-| INFRA-06 | CI pipeline | `done` | **P3** | INFRA-01, INFRA-02, INFRA-03 |
+| INFRA-05 | Podman Compose — full stack smoke test | `done` | **P2** | INFRA-01, INFRA-03 |
+| INFRA-06 | CI pipeline | `done` | **P3** | INFRA-01, INFRA-03 |
 | LAB-01 | JupyterLite feasibility spike | `done` | **P1** | — |
 | LAB-02 | JupyterLite embed in Next.js `/lab` | `done` | **P1** | LAB-01, INFRA-01 |
 | LAB-03 | Notebook 1 — Quantum Fundamentals | `done` | **P1** | LAB-01, LAB-02 |
-| LAB-04 | Notebook 2 — First Circuit with IBM Bob | `needs-info` | **P2** | LAB-03, INFRA-03 |
-| LAB-05 | Notebook 3 — Simulator vs Real QPU | `needs-info` | **P2** | LAB-03, INFRA-02 |
+| LAB-04 | Notebook 2 — First Circuit with IBM Bob | `done` | **P2** | LAB-03, INFRA-03 |
+| LAB-05 | Notebook 3 — Simulator vs Real QPU | `done` | **P2** | LAB-03 |
 | DEMO-01 | Demo route scaffold (`/demo`) | `done` | **P1** | INFRA-01 |
 | DEMO-02 | Slide content — full 16-slide workshop deck | `done` | **P2** | DEMO-01, ANIM-01..07 |
 | ANIM-01 | Qubit / Bloch sphere animation (CSS/JS) | `done` | **P1** | — |
@@ -54,25 +54,29 @@ Items are **ready** when all unknowns are resolved and acceptance criteria are c
 
 ---
 
-### INFRA-02 · Bootstrap FastAPI backend
-**Status:** `ready` · **Priority:** `P1` · **Depends on:** —
-**Scope:** `backend/`
-- `uv sync` installs all deps from existing `pyproject.toml`
-- Add `/health` route (already stubbed in `main.py`)
-- Add router skeletons: `routers/circuit.py` `routers/backends.py`
-- `POST /api/circuit/run` accepts `{ code: str, backend: str }` → returns `{ job_id, status }`
-- `GET /api/circuit/result/{job_id}` → returns `{ counts, statevector }`
-- `GET /api/backends` → computes the list locally (`aer_simulator` + IBM Quantum when `IBMQ_API_TOKEN` set)
-- `qiskit-algorithms` added as a dependency so `Grover`/`AmplificationProblem` are importable alongside
-  `qiskit.circuit.library.PhaseOracle`, needed by the LAB-07 capstone
-- **AC:** `uv run uvicorn main:app --reload` serves; `/health` returns `{"status":"ok"}`; OpenAPI docs at `/docs`; a `PhaseOracle` + `Grover` circuit exec'd through `/api/circuit/run` converges on the marked assignment
+### INFRA-02 · Bootstrap FastAPI backend — REMOVED
+**Status:** `removed` · **Priority:** `P1` · **Depends on:** —
+**Scope:** ~~`backend/`~~
+- The FastAPI backend was built, then removed once we confirmed nothing depended on it as a
+  live server: the frontend never called it (only referenced it in demo narration text), and
+  the only real caller was the notebooks, run locally by each participant.
+- Its circuit-execution and backend-listing logic (`run_via_backend`, `list_backends`) was
+  ported to `notebooks/lib/backend.py` and now runs in-process inside each notebook's own
+  kernel — no server, no port, no separate `uv` env to keep in sync.
+- `backend/`, `docker/backend.Dockerfile`, the compose `backend` service, and the CI `backend`
+  job were all deleted accordingly.
+- **Why this is fine:** the old `/api/circuit/run` handler always ran on `AerSimulator()`
+  regardless of the requested `backend` — the real-QPU routing was never actually implemented.
+  The in-process port in `notebooks/lib/backend.py` fixes that (routes to
+  `QiskitRuntimeService`/`SamplerV2` for non-simulator backend names).
 
 ---
 
 ### INFRA-03 · MCP server — core implementation
 **Status:** `ready` · **Priority:** `P1` · **Depends on:** —
 **Scope:** `mcp-server/`
-- Scope: the MCP server ONLY wraps the local Qiskit Code Assistant (circuit execution/backends live in the FastAPI backend)
+- Scope: the MCP server ONLY wraps the local Qiskit Code Assistant (circuit execution/backends
+  live in `notebooks/lib/backend.py`, run in-process by each notebook — see INFRA-02)
 - Tool: `explain_circuit(code: str) → str` — POST to Ollama `http://localhost:11434/v1/chat/completions` with granite model
 - Dual transport: stdio default, `--http` flag starts FastAPI/SSE on port 8765
 - **Multi-MCP orchestration, resolved:** the capstone's "Bob composes the Qiskit Code Assistant
@@ -97,18 +101,17 @@ Items are **ready** when all unknowns are resolved and acceptance criteria are c
 ---
 
 ### INFRA-05 · Podman Compose — full stack smoke test
-**Status:** `done` · **Priority:** `P2` · **Depends on:** INFRA-01, INFRA-02, INFRA-03
+**Status:** `done` · **Priority:** `P2` · **Depends on:** INFRA-01, INFRA-03
 **Scope:** `docker/`
 - Write `docker/frontend.Dockerfile` (Node 20, pnpm build, serve with Next.js standalone)
-- Write `docker/backend.Dockerfile` (Python 3.11, uv, uvicorn)
 - Write `docker/mcp.Dockerfile` (Python 3.11, uv, `--http` entrypoint)
 - `podman compose up --build` brings all services up
-- **AC:** All three services healthy; `/health` reachable; frontend loads at `:3000`
+- **AC:** Both services healthy; frontend loads at `:3000`
 
 ---
 
 ### INFRA-06 · CI pipeline (GitHub Actions)
-**Status:** `ready` · **Priority:** `P3` · **Depends on:** INFRA-01, INFRA-02, INFRA-03
+**Status:** `ready` · **Priority:** `P3` · **Depends on:** INFRA-01, INFRA-03
 **Scope:** `.github/workflows/`
 - `ci.yml`: on push/PR → lint + test frontend (`pnpm lint && pnpm test`), lint Python (`ruff check`)
 - `build.yml`: on tag → build + push `ghcr.io/YOUR_ORG/bob4q-mcp:latest`
@@ -163,19 +166,23 @@ Items are **ready** when all unknowns are resolved and acceptance criteria are c
 - Helper lib: `notebooks/lib/backend.py` (`run_via_backend`, `explain_with_bob`, graceful degradation)
 - Both `en` and `pt-BR` Markdown doc counterpart in `docs/i18n/`
 - **AC:** Notebook documents the Bob workflow; `explain_circuit` MCP tool is exercised (degrades
-  gracefully if the MCP server isn't running); `/api/circuit/run` produces the Bell 00/11 histogram
+  gracefully if the MCP server isn't running); `run_via_backend()` produces the Bell 00/11 histogram
 
 ---
 
 ### LAB-05 · Notebook 3 — Simulator vs Real QPU
-**Status:** `done` · **Priority:** `P2` · **Depends on:** LAB-03, INFRA-02
-**Scope:** `notebooks/` + `frontend/`
+**Status:** `done` · **Priority:** `P2` · **Depends on:** LAB-03
+**Scope:** `notebooks/`
 - File: `notebooks/03-simulator-vs-qpu.ipynb`
 - In-notebook: run on Aer simulator, show results
-- "Run on QPU" UI button outside notebook → FastAPI → IBM Quantum (requires `IBMQ_API_TOKEN`)
+- Real-QPU path runs in-process via `run_via_backend(code, backend=<ibm_backend_name>)`
+  (`notebooks/lib/backend.py`), routing through `QiskitRuntimeService`/`SamplerV2` — requires
+  an `IBMQ_API_TOKEN` environment variable set before launching Jupyter. No separate frontend
+  UI button — this was planned when the FastAPI backend existed (see INFRA-02), but the
+  notebook-only path covers the same demo need without a server.
 - Graceful degradation when no token is set (show simulated results with a note)
 - Both `en` and `pt-BR` Markdown doc counterpart in `docs/i18n/`
-- **AC:** Simulator path works without any token; QPU path calls backend if token present
+- **AC:** Simulator path works without any token; QPU path runs locally if `IBMQ_API_TOKEN` is set
 
 ---
 
@@ -195,13 +202,13 @@ Items are **ready** when all unknowns are resolved and acceptance criteria are c
 ---
 
 ### LAB-07 · Notebook 5 — Grover SAT Capstone (built by Bob)
-**Status:** `done` · **Priority:** `P1` · **Depends on:** LAB-06, INFRA-02, INFRA-03
+**Status:** `done` · **Priority:** `P1` · **Depends on:** LAB-06, INFRA-03
 **Scope:** `notebooks/`
 - File: `notebooks/05-grover-sat-capstone.ipynb`
 - Pick a small boolean formula; ask Bob — reaching the Qiskit Code Assistant MCP, whether it's
   running locally or on a shared remote server — to author the `PhaseOracle` marking its
   satisfying assignment
-- Run Grover via `/api/circuit/run` on the Aer simulator; read the amplified histogram
+- Run Grover via `run_via_backend()` on the Aer simulator; read the amplified histogram
 - Cross-check the result against a classical brute-force search over the formula
 - Maps to deck S14–S15; reuses `AmplitudeAmplificationAnimation` as the visual reference
 - Forward-looking teaser at the end: QAOA/QUBO ("Bob builds the QUBO") as the next optimization step

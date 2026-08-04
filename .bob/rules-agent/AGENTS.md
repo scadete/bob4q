@@ -20,7 +20,7 @@
 - No default exports except Next.js page/layout files
 
 ### Python packages
-- Each of `mcp-server/`, `backend/`, `manim/` has isolated `uv` env — never run `uv` from repo root for these
+- Each of `mcp-server/`, `manim/` has isolated `uv` env — never run `uv` from repo root for these; notebooks have no dedicated env, deps declared per-notebook via `uv run --with ...`
 - Use `ruff check . && ruff format .` before committing Python — configured per-package
 
 ### Animations
