@@ -2,6 +2,11 @@ import type { ComponentType } from "react";
 import { QubitAnimation } from "@/components/animations/QubitAnimation";
 import { SuperpositionAnimation } from "@/components/animations/SuperpositionAnimation";
 import { EntanglementAnimation } from "@/components/animations/EntanglementAnimation";
+import { AgenticLoopAnimation } from "@/components/animations/AgenticLoopAnimation";
+import { ResultsHistogramAnimation } from "@/components/animations/ResultsHistogramAnimation";
+import { GatesAnimation } from "@/components/animations/GatesAnimation";
+import { ParityAnimation } from "@/components/animations/ParityAnimation";
+import { AmplitudeAmplificationAnimation } from "@/components/animations/AmplitudeAmplificationAnimation";
 
 /**
  * bob4q animation registry.
@@ -15,13 +20,26 @@ import { EntanglementAnimation } from "@/components/animations/EntanglementAnima
  * incrementally — an unregistered name simply renders no animation yet.
  */
 
-export type AnimationName = "qubit" | "superposition" | "entanglement";
+export type AnimationName =
+  | "qubit"
+  | "superposition"
+  | "entanglement"
+  | "agenticLoop"
+  | "resultsHistogram"
+  | "gates"
+  | "parity"
+  | "amplitudeAmplification";
 
 // Populated as each animation component is implemented and approved.
 export const animations: Partial<Record<AnimationName, ComponentType>> = {
   qubit: QubitAnimation,
   superposition: SuperpositionAnimation,
   entanglement: EntanglementAnimation,
+  agenticLoop: AgenticLoopAnimation,
+  resultsHistogram: ResultsHistogramAnimation,
+  gates: GatesAnimation,
+  parity: ParityAnimation,
+  amplitudeAmplification: AmplitudeAmplificationAnimation,
 };
 
 export function getAnimation(name: AnimationName): ComponentType | undefined {

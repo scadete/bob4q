@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { drawCNOT, drawGateBox, drawMeterBox, drawPlayhead, drawWire, readCircuitColors } from "./circuit";
 
 /**
  * ANIM-03 — Entanglement / Bell state.
@@ -38,17 +39,7 @@ export function EntanglementAnimation() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const cs = getComputedStyle(canvas);
-    const tok = (name: string, fallback: string) => cs.getPropertyValue(name).trim() || fallback;
-    const colors = {
-      wire: tok("--cds-border-strong", "#8d8d8d"),
-      box: tok("--cds-layer-01", "#262626"),
-      text: tok("--cds-text-primary", "#f4f4f4"),
-      textDim: tok("--cds-text-secondary", "#c6c6c6"),
-      gate: tok("--cds-border-interactive", "#4589ff"),
-      state: tok("--cds-support-warning", "#f1c21b"), // superposition / entangled / result
-      play: tok("--cds-support-info", "#4589ff"),
-    };
+    const colors = readCircuitColors(canvas);
 
     let W = 0, H = 0;
     const setup = () => {
@@ -100,14 +91,7 @@ export function EntanglementAnimation() {
       const box = Math.max(20, W * 0.07);
 
       // Base wires.
-      ctx.strokeStyle = colors.wire;
-      ctx.lineWidth = 1.6;
-      for (const wy of [wy0, wy1]) {
-        ctx.beginPath();
-        ctx.moveTo(W * 0.1, wy);
-        ctx.lineTo(wireEnd, wy);
-        ctx.stroke();
-      }
+      for (const wy of [wy0, wy1]) drawWire(ctx, W * 0.1, wireEnd, wy, colors.wire);
 
       // State overlay: q0 superposed after H; both entangled after CNOT.
       ctx.strokeStyle = colors.state;
@@ -138,37 +122,10 @@ export function EntanglementAnimation() {
       ctx.fillText("|0⟩", W * 0.06, wy1);
 
       // H gate box on q0.
-      ctx.fillStyle = colors.box;
-      ctx.strokeStyle = colors.gate;
-      ctx.lineWidth = 1.6;
-      ctx.beginPath();
-      ctx.rect(hx - box / 2, wy0 - box / 2, box, box);
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillStyle = colors.text;
-      ctx.font = `bold ${Math.round(box * 0.5)}px 'IBM Plex Sans', system-ui, sans-serif`;
-      ctx.fillText("H", hx, wy0 + 1);
+      drawGateBox(ctx, hx, wy0, "H", box, colors);
 
       // CNOT: control dot on q0, line to target ⊕ on q1.
-      ctx.strokeStyle = colors.gate;
-      ctx.fillStyle = colors.gate;
-      ctx.lineWidth = 1.6;
-      ctx.beginPath();
-      ctx.moveTo(cx, wy0);
-      ctx.lineTo(cx, wy1);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(cx, wy0, r * 0.42, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(cx, wy1, r, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(cx - r, wy1);
-      ctx.lineTo(cx + r, wy1);
-      ctx.moveTo(cx, wy1 - r);
-      ctx.lineTo(cx, wy1 + r);
-      ctx.stroke();
+      drawCNOT(ctx, cx, wy0, wy1, r, colors.gate);
 
       // |Φ⁺⟩ label once entangled.
       if (bt.entangled) {
@@ -178,27 +135,7 @@ export function EntanglementAnimation() {
       }
 
       // Measurement meters (show the outcome digit once measured).
-      for (const wy of [wy0, wy1]) {
-        ctx.fillStyle = colors.box;
-        ctx.strokeStyle = bt.outcome ? colors.state : colors.wire;
-        ctx.lineWidth = 1.6;
-        ctx.beginPath();
-        ctx.rect(sx1 - box / 2, wy - box / 2, box, box);
-        ctx.fill();
-        ctx.stroke();
-        if (bt.outcome) {
-          ctx.fillStyle = colors.state;
-          ctx.font = `bold ${Math.round(box * 0.6)}px 'IBM Plex Sans', system-ui, sans-serif`;
-          ctx.fillText(bt.outcome, sx1, wy + 1);
-        } else {
-          // little gauge arc
-          ctx.strokeStyle = colors.textDim;
-          ctx.lineWidth = 1.4;
-          ctx.beginPath();
-          ctx.arc(sx1, wy + box * 0.15, box * 0.3, Math.PI, 0);
-          ctx.stroke();
-        }
-      }
+      for (const wy of [wy0, wy1]) drawMeterBox(ctx, sx1, wy, box, colors, bt.outcome);
 
       // Correlation bond between the two results (glows on measurement).
       if (bt.outcome) {
@@ -216,19 +153,9 @@ export function EntanglementAnimation() {
       }
 
       // Execution playhead.
-      if (bt.playProg >= 0 && bt.playAlpha > 0) {
+      if (bt.playProg >= 0) {
         const px = prog2x(bt.playProg);
-        ctx.save();
-        ctx.strokeStyle = colors.play;
-        ctx.lineWidth = 2;
-        ctx.globalAlpha = bt.playAlpha;
-        ctx.shadowColor = colors.play;
-        ctx.shadowBlur = 10;
-        ctx.beginPath();
-        ctx.moveTo(px, wy0 - box * 0.8);
-        ctx.lineTo(px, wy1 + box * 0.8);
-        ctx.stroke();
-        ctx.restore();
+        drawPlayhead(ctx, px, wy0 - box * 0.8, wy1 + box * 0.8, colors.play, bt.playAlpha);
       }
     };
 
