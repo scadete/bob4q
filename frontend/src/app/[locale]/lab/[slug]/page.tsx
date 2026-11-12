@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { remark } from "remark";
 import remarkMath from "remark-math";
@@ -83,16 +84,7 @@ export default async function NotebookPage({
     </nav>
   );
 
-  if (!meta) {
-    return (
-      <main style={{ maxWidth: "820px", margin: "0 auto", padding: "2rem 1rem" }}>
-        {breadcrumb}
-        <p style={{ color: "var(--cds-text-secondary)", marginTop: "1rem" }}>
-          {t("not_found")}
-        </p>
-      </main>
-    );
-  }
+  if (!meta) notFound();
 
   const tnb = await getTranslations("notebooks");
   const title = tnb(`${meta.slug}.title`);
