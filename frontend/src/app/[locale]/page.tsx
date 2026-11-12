@@ -95,6 +95,15 @@ export default function HomePage() {
               </Button>
               <Button
                 as={Link}
+                href={`/${locale}/at-home`}
+                kind="tertiary"
+                renderIcon={ArrowRight}
+                size="lg"
+              >
+                {t("cta_athome")}
+              </Button>
+              <Button
+                as={Link}
                 href={`/${locale}/demo`}
                 kind="tertiary"
                 renderIcon={ArrowRight}

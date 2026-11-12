@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@carbon/react";
 import { getAnimation } from "@/lib/animations";
 import type { Replay, ReplayStep } from "@/lib/replay-schema";
@@ -64,6 +65,7 @@ function StepView({ step, tag }: { step: ReplayStep; tag: string }) {
 function Session({ replay, idKey }: { replay: Replay; idKey: string }) {
   const t = useTranslations("replay");
   const tItem = useTranslations(`replays.${idKey}`);
+  const locale = useLocale();
   const total = replay.steps.length;
   const [shown, setShown] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -159,6 +161,7 @@ function Session({ replay, idKey }: { replay: Replay; idKey: string }) {
         <section className={styles.card}>
           <strong>{t("takehome")}</strong>
           <div>{tItem("takehome")}</div>
+          <Link href={`/${locale}/at-home`}>{t("athome")}</Link>
         </section>
       ) : null}
     </div>

@@ -36,7 +36,8 @@
     "cta_replays": "Ver Sessões Gravadas",
     "replays_title": "Sessões Gravadas do Bob",
     "replays_subtitle": "Quatro sessões reais do Bob, reproduzidas passo a passo. Preveja o que o Bob vai fazer e depois assista. Nada para instalar.",
-    "open_replay": "Abrir Reprodução"
+    "open_replay": "Abrir Reprodução",
+    "cta_athome": "Faça em casa"
   },
   "lab": {
     "title": "Roteiro Quântico do IBM Bob",
@@ -267,7 +268,8 @@
     },
     "show_more": "Mostrar mais {count} linhas",
     "show_less": "Mostrar menos",
-    "pins": "Versões"
+    "pins": "Versões",
+    "athome": "Faça em casa"
   },
   "replays": {
     "uc1_coin": {
@@ -333,5 +335,20 @@
       "explain": "Quase sempre 000 (1002 de 1024 execuções) com alguns resultados errados. O hardware real tem ruído; o simulador não.",
       "takehome": "Prompt: adapte o dj_sim.py para rodar em um computador quântico real da IBM com o qiskit-ibm-runtime. Precisa: uma conta IBM Quantum (o plano Open gratuito serve, 10 minutos de QPU), o token em QISKIT_IBM_TOKEN, nunca no código. Esta reprodução rodou dois jobs pequenos no ibm_kingston."
     }
+  },
+  "athome": {
+    "title": "Faça em casa",
+    "intro": "Tudo o que apareceu nas sessões gravadas, para você repetir no seu ritmo e na sua conta. As sessões rodaram no IBM Bob 2.0.9 e no Qiskit 2.6.2 em novembro de 2026.",
+    "download": "Baixar o kit (.zip)",
+    "download_note": "Contém a configuração do Bob (.bob/mcp.json), três skills, uma regra de mentoria para iniciantes, os scripts de exemplo, os cinco notebooks do laboratório e um README-HOME.md com os mesmos passos desta página.",
+    "needs_title": "O que você precisa",
+    "need_account": "Uma conta do IBM Bob. A IBM lista um teste de 30 dias com 50 Bobcoins que exige um IBMid; confira os termos atuais em ibm.com/products/ai-coding-agent/pricing.",
+    "need_runtime": "Node.js 24 ou superior, e Python com uv.",
+    "need_qpu": "Só para o último exemplo: uma conta gratuita da IBM Quantum (plano Open, 10 minutos de QPU a cada 28 dias) e o token da API.",
+    "setup_title": "Preparação",
+    "prompts_title": "Os quatro prompts",
+    "see_replay": "Ver a sessão gravada",
+    "expect_title": "O que esperar",
+    "expect_body": "O Bob escreve de um jeito diferente a cada vez; os resultados devem bater: cerca de 500 e 500 na moeda, uma explicação com links da documentação, o script rodando no Qiskit 2.x, e um computador quântico real dando quase sempre a resposta certa, com um pouco de ruído."
   }
 }

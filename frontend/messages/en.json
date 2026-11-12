@@ -36,7 +36,8 @@
     "cta_replays": "Watch Recorded Sessions",
     "replays_title": "Recorded Bob Sessions",
     "replays_subtitle": "Four real Bob sessions, replayed step by step. Predict what Bob will do, then watch. Nothing to install.",
-    "open_replay": "Open Replay"
+    "open_replay": "Open Replay",
+    "cta_athome": "Do this at home"
   },
   "lab": {
     "title": "IBM Bob Quantum Walkthrough",
@@ -267,7 +268,8 @@
     },
     "show_more": "Show {count} more lines",
     "show_less": "Show less",
-    "pins": "Pinned"
+    "pins": "Pinned",
+    "athome": "Do this at home"
   },
   "replays": {
     "uc1_coin": {
@@ -333,5 +335,20 @@
       "explain": "Mostly 000 (1002 of 1024 shots) with a few wrong results. Real hardware has noise; the simulator does not.",
       "takehome": "Prompt: adapt dj_sim.py to run on a real IBM quantum computer with qiskit-ibm-runtime. Needs: an IBM Quantum account (the free Open Plan works, 10 minutes of QPU time), the token in QISKIT_IBM_TOKEN, never in the code. This replay ran two small jobs on ibm_kingston."
     }
+  },
+  "athome": {
+    "title": "Do this at home",
+    "intro": "Everything in the recorded sessions, so you can repeat it at your own pace on your own account. The sessions ran on IBM Bob 2.0.9 and Qiskit 2.6.2 in November 2026.",
+    "download": "Download the kit (.zip)",
+    "download_note": "Contains the Bob config (.bob/mcp.json), three skills, a beginner-mentoring rule, the example scripts, the five lab notebooks and a README-HOME.md with the same steps as this page.",
+    "needs_title": "What you need",
+    "need_account": "An IBM Bob account. IBM lists a 30-day trial with 50 Bobcoins that needs an IBMid; check the current terms at ibm.com/products/ai-coding-agent/pricing.",
+    "need_runtime": "Node.js 24 or later, and Python with uv.",
+    "need_qpu": "For the last example only: a free IBM Quantum account (Open Plan, 10 minutes of QPU time per 28 days) and its API token.",
+    "setup_title": "Set up",
+    "prompts_title": "The four prompts",
+    "see_replay": "See the recorded session",
+    "expect_title": "What to expect",
+    "expect_body": "Bob words things differently each time; the results should match: about 500 and 500 for the coin, a docs-linked explanation, the script running on Qiskit 2.x, and a real quantum computer giving mostly the right answer with a little noise."
   }
 }

@@ -240,14 +240,27 @@ Use the official packages wherever they exist; write our own only for use case 1
 
 ### 5.3 Take-home ("Do this at home")
 
-- A frontend page, both locales, with the path: get a Bob trial (30 days, 50
-  Bobcoins, IBMid) or use an existing account; install the IDE or Bob Shell;
-  copy the `.bob/` folder; run the same prompts shown in the replays.
-- A kit published as a repository or archive: `.bob/`, the four notebooks, the
-  prompts in a `README-HOME.md`, and the expected results. It is delivered
-  **after** the session by a link on the wrap-up slide, so it does not conflict
-  with the no-download rule during the event.
-- Each take-home card in the replays links to the matching section of this page.
+Built. The route `/[locale]/at-home` (English and pt-BR) lists what you need
+(an IBM Bob account, Node 24 and Python with uv, and for the last example an
+IBM Quantum token), the install and run commands, and the four prompts exactly
+as recorded, each with a link to its replay. It is linked from the home page
+and from every replay's take-home card.
+
+The kit is `frontend/public/kit/bob4q-kit.zip` (about 120 KB), served at
+`/kit/bob4q-kit.zip`. It holds `.bob/mcp.json`, the three skills with the
+upstream licence and `UPSTREAM.md`, a beginner-mentoring rule, the three example
+scripts, the five lab notebooks, and `README-HOME.md` (the same steps as the
+page). It is offered after the session, so it does not conflict with the
+no-download rule during the event.
+
+- Sources live in `kit/` (`README-HOME.md`, `rules-agent-AGENTS.md`,
+  `examples/`). Rebuild after changing any of them, the skills, `.bob/mcp.json`
+  or the notebooks: `python3 scripts/build_kit.py`. The script refuses to build
+  if a file contains a `bob_prod_` key or a home path.
+- The kit omits the repo's own rules file, which mixes in project-specific
+  Manim and MCP-server rules.
+- Not yet checked: the kit unzipped on a clean machine, with a real Bob trial
+  account, following only the page. Do this before the event.
 
 ### 5.6 Official skills and MCP servers: pins and access
 
