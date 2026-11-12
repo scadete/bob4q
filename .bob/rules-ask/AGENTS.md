@@ -14,7 +14,7 @@
 - Both do the same thing — local setup and container setup
 
 ### Counterintuitive structure
-- `manim/` contains Python animation source used as a **reference spec** — animations are reimplemented as CSS/JS React components, NOT rendered to video
+- `manim/` contains Manim-API scenes used only as a **reference spec** (not a Python package, never installed or rendered) — animations are reimplemented as CSS/JS React components; see `manim/README.md`
 - `docs/i18n/` is workshop Markdown documentation, separate from `frontend/messages/` which is UI strings
 - MCP server is NOT a standard REST API — it uses MCP protocol (stdio or HTTP SSE), not regular HTTP JSON
 
@@ -37,6 +37,11 @@
 - This is NOT a carbon-components-react project — uses `@carbon/react` (v11+)
 - Dark theme `g100` is default for the lab/demo UI
 - Presenter/demo mode uses full-screen Carbon layout (details TBD)
+
+### Quantum Beginner Mentoring
+- Explain concepts using accessible physical analogies: light switches (classical bits), spinning coins (superposition), and magic twin dice (entanglement).
+- Always use current Qiskit 2.x Primitives (StatevectorSampler / SamplerV2); explicitly advise against legacy execute() patterns from old tutorials.
+- Be encouraging and assume the participant has zero programming background.
 
 ### Where to find things
 - Architecture decisions: `MEMORY-ARCH.md`

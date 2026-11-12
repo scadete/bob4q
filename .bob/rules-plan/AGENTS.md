@@ -8,7 +8,7 @@
 - MCP server MUST support both stdio (Bob local) AND HTTP SSE (container/remote) — these are not separate codebases
 
 ### Coupling to watch
-- Adding an animation requires: a CSS/JS React component + an entry in `frontend/src/lib/animations.ts` (optionally a `manim/scenes/*.py` reference) — no render/copy step
+- Adding an animation requires: a spec scene in `manim/scenes/*.py` (read-only, never rendered) validated with the user → a CSS/JS React component + an entry in `frontend/src/lib/animations.ts` — no render/copy step. Translation rules: `manim/README.md`
 - New MCP tool requires: `server.py` registration (stdio + HTTP) only — it's independent of
   circuit execution, which lives in `notebooks/lib/backend.py` and runs in-process, no server
 - New workshop module requires: docs in BOTH `docs/i18n/en/` AND `docs/i18n/pt-BR/` + route in Next.js + navigation update

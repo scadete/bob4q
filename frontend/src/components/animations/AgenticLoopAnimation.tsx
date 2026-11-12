@@ -110,11 +110,15 @@ export function AgenticLoopAnimation() {
       boxH = paddingY * 2 + titleFontPx * 1.15 + lineGap + subFontPx * 1.15;
     };
 
-    const nodePos = (): Record<NodeId, Point> => ({
-      you: { x: W * 0.15, y: H * 0.82 },
-      bob: { x: W * 0.5, y: H * 0.2 },
-      mcp: { x: W * 0.85, y: H * 0.82 },
-    });
+    const nodePos = (): Record<NodeId, Point> => {
+      // Keep side boxes (and their active halo) inside the canvas on narrow stages.
+      const sideX = Math.max(W * 0.15, boxW / 2 + 8);
+      return {
+        you: { x: sideX, y: H * 0.82 },
+        bob: { x: W * 0.5, y: H * 0.2 },
+        mcp: { x: W - sideX, y: H * 0.82 },
+      };
+    };
 
     const drawNode = (p: Point, id: NodeId, active: boolean) => {
       const { title, sub } = NODE_COPY[id];
@@ -295,7 +299,7 @@ export function AgenticLoopAnimation() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const stageSize = "min(520px, 92vw)";
+  const stageSize = "min(max(520px, 36vw), calc(100vw - 2rem), calc((100dvh - 26rem) * 1.5))";
   return (
     <div
       role="img"

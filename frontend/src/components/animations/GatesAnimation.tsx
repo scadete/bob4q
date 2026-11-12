@@ -142,7 +142,7 @@ export function GatesAnimation() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const stageSize = "min(420px, 90vw)";
+  const stageSize = "min(max(420px, 30vw), calc(100vw - 2rem), calc((100dvh - 26rem) * 2))";
   return (
     <div
       role="img"

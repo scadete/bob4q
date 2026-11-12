@@ -49,9 +49,9 @@ pnpm --filter frontend build
 cd mcp-server && uv sync && uv run ruff check .
 
 # Notebooks (run locally from repo root)
-uv run --with jupyter --with qiskit==1.2.0 --with qiskit-aer --with matplotlib \
-  --with pylatexenc --with nbclient \
-  jupyter execute notebooks/01-quantum-fundamentals.ipynb
+uv run --with jupyter --with qiskit --with matplotlib \
+  --with pylatexenc --with httpx --with nbclient \
+  jupyter execute notebooks/01-hello-quantum-with-bob.ipynb
 # (repeat for 02-05; swap `jupyter execute` for `jupyter lab` to open interactively —
 # see each notebook's intro cell for its exact --with flags)
 ```
@@ -84,13 +84,13 @@ See [`docs/i18n/en/bob-setup.md`](docs/i18n/en/bob-setup.md) for configuration i
 
 ## ✦ Workshop Modules
 
-| # | Module | Concepts |
-|---|--------|---------|
-| 1 | Quantum Fundamentals | Qubits, superposition, entanglement |
-| 2 | First Circuit with Bob | Qiskit basics, AI assistance |
-| 3 | Simulator vs Real QPU | IBM Quantum backends |
-| 4 | Quantum Advantage & Oracles | Bernstein-Vazirani, phase kickback, oracles |
-| 5 | Grover SAT Capstone | Grover's algorithm, SAT oracle, built by Bob |
+| # | Notebook | Concepts |
+|---|----------|----------|
+| 1 | `01-hello-quantum-with-bob.ipynb` | Qubits, superposition, first circuit with IBM Bob |
+| 2 | `02-entanglement-magic-coins.ipynb` | Bell state, CNOT gate, quantum entanglement |
+| 3 | `03-modern-qiskit-guardrails.ipynb` | Current Qiskit 2.x Primitives, AI error prevention |
+| 4 | `04-simulator-vs-real-qpu.ipynb` | Local simulator vs IBM Quantum hardware backends |
+| 5 | `05-bobalytics-and-capstone.ipynb` | Phase kickback riddle in 1 query & Bobalytics scorecard |
 
 ## ✦ Tech Stack
 

@@ -94,6 +94,41 @@ export function drawCNOT(
   ctx.stroke();
 }
 
+/** Toffoli (CCX): two control dots, one line spanning all three wires, ⊕ on the target. */
+export function drawToffoli(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  yC1: number,
+  yC2: number,
+  yTarget: number,
+  r: number,
+  color: string,
+) {
+  const yMin = Math.min(yC1, yC2, yTarget);
+  const yMax = Math.max(yC1, yC2, yTarget);
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.moveTo(cx, yMin);
+  ctx.lineTo(cx, yMax);
+  ctx.stroke();
+  for (const y of [yC1, yC2]) {
+    ctx.beginPath();
+    ctx.arc(cx, y, r * 0.42, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.beginPath();
+  ctx.arc(cx, yTarget, r, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - r, yTarget);
+  ctx.lineTo(cx + r, yTarget);
+  ctx.moveTo(cx, yTarget - r);
+  ctx.lineTo(cx, yTarget + r);
+  ctx.stroke();
+}
+
 /** Measurement meter box: shows the collapsed outcome digit, or a gauge arc while pending. */
 export function drawMeterBox(
   ctx: CanvasRenderingContext2D,

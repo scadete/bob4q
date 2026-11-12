@@ -1,0 +1,43 @@
+{
+  "id": "uc2_no_docs",
+  "source": "recorded",
+  "bobVersion": "2.0.9",
+  "recordedAt": "2026-11-12",
+  "predictAnswer": 1,
+  "steps": [
+    {
+      "type": "prompt",
+      "text": "Explain what bell.py does, gate by gate, for a complete beginner. Link the docs page for each gate. Do not edit any file."
+    },
+    {
+      "type": "assistant",
+      "text": "Let me find and read the file first."
+    },
+    {
+      "type": "tool_call",
+      "tool": "glob",
+      "input": "{\"pattern\": \"**/bell.py\"}"
+    },
+    {
+      "type": "tool_result",
+      "text": "bell.py"
+    },
+    {
+      "type": "tool_call",
+      "tool": "read_file",
+      "input": "{\"path\": \"bell.py\"}"
+    },
+    {
+      "type": "tool_result",
+      "text": "Contents of file bell.py:\n\n1 | from qiskit import QuantumCircuit\n2 | from qiskit.primitives import StatevectorSampler\n3 | \n4 | qc = QuantumCircuit(2, 2)\n5 | qc.h(0)\n6 | qc.cx(0, 1)\n7 | qc.measure([0, 1], [0, 1])\n8 | \n9 | result = StatevectorSampler().run([qc], shots=1000).result()\n10 | print(result[0].data.c.get_counts())\n11 |"
+    },
+    {
+      "type": "assistant",
+      "text": "Here is a gate-by-gate walkthrough for a complete beginner.\n\n---\n\n## What [`bell.py`](bell.py) does\n\nThis program creates a **Bell state** — the simplest example of quantum entanglement — runs it 1 000 times, and prints how often each outcome was measured. The expected result is roughly `{'00': 500, '11': 500}`, meaning the two qubits are always measured together (both 0 or both 1), never independently.\n\n---\n\n### The circuit: two qubits, two classical bits\n\n```python\nqc = QuantumCircuit(2, 2)\n```\n\nThink of this as setting up two quantum coins (`q0`, `q1`) and two slots on a notepad to write down the results (`c0`, `c1`). The coins start in the definite \"heads\" state (`|0⟩`).\n\n---\n\n### Gate 1 — `qc.h(0)` — The Hadamard gate\n\n```python\nqc.h(0)\n```\n\n**Docs:** [Hadamard gate — Qiskit Circuit Library](https://docs.quantum.ibm.com/api/qiskit/qiskit.circuit.library.HGate)\n\nApplied to qubit `q0` only. This is the **\"flip the coin in the air\"** gate.\n\n- Before: `q0` is a definite `|0⟩` (heads).\n- After: `q0` is in **superposition** — it is simultaneously `|0⟩` and `|1⟩` with equal probability (50 / 50), like a spinning coin that hasn't landed yet.\n\nThe key point: the coin isn't secretly one side or the other — it genuinely has no definite value until measured.\n\n---\n\n### Gate 2 — `qc.cx(0, 1)` — The CNOT (Controlled-X) gate\n\n```python\nqc.cx(0, 1)\n```\n\n**Docs:** [CXGate — Qiskit Circuit Library](https://docs.quantum.ibm.com/api/qiskit/qiskit.circuit.library.CXGate)\n\nThis is a **two-qubit gate** — it uses `q0` as the *control* and `q1` as the *target*.\n\nThe rule is simple:\n- If the control qubit (`q0`) is `|0⟩` → do nothing to `q1`.\n- If the control qubit (`q0`) is `|1⟩` → flip `q1` (0→1 or 1→0).\n\nBut `q0` is currently in *superposition* of both. So after CNOT:\n\n| Branch | `q0` | `q1` | Combined |\n|---|---|---|---|\n| 50 % | `0` | `0` (not flipped) | `00` |\n| 50 % | `1` | `1` (flipped) | `11` |\n\nThe two qubits are now **entangled**: their fates are linked. Measuring one instantly determines the other, no matter how far apart they are. This is the Bell state `|Φ⁺⟩ = (|00⟩ + |11⟩) / √2`.\n\n---\n\n### Gate 3 — `qc.measure([0, 1], [0, 1])` — Measurement\n\n```python\nqc.measure([0, 1], [0, 1])\n```\n\n**Docs:** [QuantumCircuit.measure — Qiskit](https://docs.quantum.ibm.com/api/qiskit/qiskit.circuit.QuantumCircuit#measure)\n\nThis is the **\"catch the coins\"** step. Measurement collapses the quantum superposition into a definite classical outcome:\n\n- `q0` → written to classical bit `c0`\n- `q1` → written to classical bit `c1`\n\nBecause of entanglement, both coins always land the same way: both `00` or both `11`. You will never see `01` or `10`.\n\n---\n\n### Running and reading results\n\n```python\nresult = StatevectorSampler().run([qc], shots=1000).result()\nprint(result[0].data.c.get_counts())\n```\n\n**Docs:** [StatevectorSampler — Qiskit Primitives](https://docs.quantum.ibm.com/api/qiskit/qiskit.primitives.StatevectorSampler)\n\n- `shots=1000` means \"run the whole experiment 1 000 times independently.\"\n- `result[0].data.c` accesses the classical register named `c` (where the measurements were recorded).\n- `.get_counts()` tallies how many times each outcome (`'00'`, `'11'`) appeared.\n\nTypical output:\n```\n{'00': 503, '11': 497}\n```\n\nThe near-perfect 50/50 split between `00` and `11` — with `01` and `10` never appearing — is the experimental signature of a Bell state.\n\n---\n\n### Summary diagram\n\n```\nq0: ──[H]──●──[M]──\n           │\nq1: ───────X──[M]──\n```\n\n| Step | Gate | What it does (beginner) |\n|---|---|---|\n| 1 | **H** on `q0` | Puts `q0` into superposition (spinning coin) |\n| 2 | **CNOT** `q0→q1` | Entangles `q1` with `q0` (twin magic dice) |\n| 3 | **Measure** both | Collapses to `00` or `11`, always matching |",
+      "animation": "entanglement"
+    }
+  ],
+  "pins": {
+    "qiskit": "2.6.2"
+  }
+}

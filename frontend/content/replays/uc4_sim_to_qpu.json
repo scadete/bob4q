@@ -1,0 +1,125 @@
+{
+  "id": "uc4_sim_to_qpu",
+  "source": "recorded",
+  "bobVersion": "2.0.9",
+  "recordedAt": "2026-11-12",
+  "predictAnswer": 1,
+  "steps": [
+    {
+      "type": "prompt",
+      "text": "dj_sim.py runs Deutsch-Jozsa on a local simulator. Adapt it to run on a real IBM quantum computer with qiskit-ibm-runtime. Use the Qiskit documentation to check the current API. Read the API token only from the environment variable QISKIT_IBM_TOKEN, never write it to a file or print it; use job mode, no sessions; use the backend ibm_kingston; transpile with generate_preset_pass_manager; keep 1024 shots. Save the result as dj_qpu.py, run it, and print the simulator and QPU counts side by side."
+    },
+    {
+      "type": "tool_call",
+      "tool": "read_file",
+      "input": "{\"path\": \"dj_sim.py\"}"
+    },
+    {
+      "type": "tool_call",
+      "tool": "mcp__qiskit-docs__search_docs_tool",
+      "input": "{\"query\": \"qiskit-ibm-runtime SamplerV2 job mode no session transpile generate_preset_pass_manager\"}"
+    },
+    {
+      "type": "tool_result",
+      "text": "Contents of file dj_sim.py:\n\n1 | \"\"\"Deutsch-Jozsa on 3 input qubits, run on a local simulator (Qiskit 2.x).\"\"\"\n2 | \n3 | from qiskit import QuantumCircuit\n4 | from qiskit.primitives import StatevectorSampler\n5 | \n6 | N = 3\n7 | SHOTS = 1024\n8 | \n9 | \n10 | def oracle(kind: str) -> QuantumCircuit:\n11 |     \"\"\"Constant oracle (always 0) or balanced oracle (parity of the inputs).\"\"\"\n12 |     qc = QuantumCircuit(N + 1)\n13 |     if kind == \"balanced\":\n14 |         for q in range(N):\n15 |             qc.cx(q, N)\n16 |     return qc\n17 | \n18 | \n19 | def deutsch_jozsa(kind: str) -> QuantumCircuit:\n20 |\n..."
+    },
+    {
+      "type": "tool_result",
+      "text": "…train the angles, then build and submit the hardware job\nhttps://quantum.cloud.ibm.com/docs/en/tutorials/quantum-approximate-multi-objective-optimization#steps-2-3-train-the-angles-then-build-and-submit-the-hardware-job\nError code registry\nhttps://quantum.cloud.ibm.com/docs/en/errors#:~:text=Error%20code%20registry\nBatch\nhttps://quantum.cloud.ibm.com/docs/en/api/qiskit-ibm-runtime/batch#batch"
+    },
+    {
+      "type": "tool_call",
+      "tool": "mcp__qiskit-docs__get_page_tool",
+      "input": "{\"url\": \"guides/run-jobs-without-sessions\"}"
+    },
+    {
+      "type": "tool_call",
+      "tool": "mcp__qiskit-docs__search_docs_tool",
+      "input": "{\"query\": \"QiskitRuntimeService backend SamplerV2 run without session job mode\", \"scope\": \"documentation\"}"
+    },
+    {
+      "type": "tool_result",
+      "text": "AerSimulator\nhttps://quantum.cloud.ibm.com/docs/en/guides/local-simulators#aersimulator\nAerSimulator examples\nhttps://quantum.cloud.ibm.com/docs/en/ibm-quantum-compute/local-testing-mode#aersimulator-examples\nError code registry\nhttps://quantum.cloud.ibm.com/docs/en/errors#:~:text=Error%20code%20registry"
+    },
+    {
+      "type": "tool_result",
+      "text": "error: Failed to fetch 'guides/run-jobs-without-sessions'. The page may not exist. Try using search_docs_tool to find the correct URL."
+    },
+    {
+      "type": "tool_call",
+      "tool": "mcp__qiskit-docs__get_page_tool",
+      "input": "{\"url\": \"https://quantum.cloud.ibm.com/docs/en/guides/local-simulators#aersimulator\"}"
+    },
+    {
+      "type": "tool_call",
+      "tool": "mcp__qiskit-docs__search_docs_tool",
+      "input": "{\"query\": \"SamplerV2 without session direct backend run Open Plan\", \"scope\": \"api\"}"
+    },
+    {
+      "type": "tool_result",
+      "text": "QiskitRuntimeService\nhttps://quantum.cloud.ibm.com/docs/en/api/qiskit-ibm-runtime/qiskit-runtime-service#qiskitruntimeservice\nIBM Quantum System REST API\nhttps://quantum.cloud.ibm.com/docs/en/api/quantum-system-rest#ibm-quantum-system-rest-api\nExpressions\nhttps://quantum.cloud.ibm.com/docs/en/api/qiskit/circuit_classical#expressions"
+    },
+    {
+      "type": "tool_result",
+      "text": "https://quantum.cloud.ibm.com/docs/en/guides/local-simulators#aersimulator\n# Migrate to local simulators\n\nIn quantum computing, the choice between using simulators and quantum hardware is crucial for making progress in the field. While simulators are useful for testing and debugging, in this era of quantum utility, quantum development and industry advancement requires actual hardware. As part of the move to quantum utility, IBM Quantum® cloud simulators were retired on 15 May 2024. This guide explains the retirement in more detail, and how to migrate from cloud-based simulators, such as `ibmq_\n..."
+    },
+    {
+      "type": "tool_call",
+      "tool": "mcp__qiskit-docs__get_page_tool",
+      "input": "{\"url\": \"https://quantum.cloud.ibm.com/docs/en/api/qiskit-ibm-runtime/qiskit-runtime-service#qiskitruntimeservice\"}"
+    },
+    {
+      "type": "tool_call",
+      "tool": "mcp__qiskit-docs__search_docs_tool",
+      "input": "{\"query\": \"SamplerV2 mode backend job submit QPU real hardware example\", \"scope\": \"documentation\"}"
+    },
+    {
+      "type": "tool_result",
+      "text": "AerSimulator examples\nhttps://quantum.cloud.ibm.com/docs/en/ibm-quantum-compute/local-testing-mode#aersimulator-examples\nAerSimulator\nhttps://quantum.cloud.ibm.com/docs/en/guides/local-simulators#aersimulator\nOpen a session\nhttps://quantum.cloud.ibm.com/docs/en/ibm-quantum-compute/run-jobs-session#open-a-session"
+    },
+    {
+      "type": "tool_result",
+      "text": "https://quantum.cloud.ibm.com/docs/en/api/qiskit-ibm-runtime/qiskit-runtime-service#qiskitruntimeservice\n# QiskitRuntimeService\n\n_class _`QiskitRuntimeService(*args, **kwargs)`\n\n[GitHub](https://github.com/Qiskit/qiskit-ibm-runtime/tree/stable/0.52/qiskit_ibm_runtime/qiskit_runtime_service.py#L58-L1536 \"view source code\")"
+    },
+    {
+      "type": "tool_call",
+      "tool": "mcp__qiskit-docs__get_page_tool",
+      "input": "{\"url\": \"https://quantum.cloud.ibm.com/docs/en/ibm-quantum-compute/get-started-with-sampler\"}"
+    },
+    {
+      "type": "tool_result",
+      "text": "https://quantum.cloud.ibm.com/docs/en/ibm-quantum-compute/get-started-with-sampler\n# Sampler quickstart\n\nThe Sampler's core task is sampling the output register from the execution of one or more quantum circuits. [Dynamic circuits](/docs/en/ibm-quantum-compute/execute-dynamic-circuits) and parameterized circuits are accepted as input (if parametrized circuits are submitted, the parameter values must also be provided). Sampler also supports built-in dynamical decoupling and twirling for [error suppression](/docs/en/guides/error-mitigation-and-suppression-techniques).\n\nThe steps in this topic de\n..."
+    },
+    {
+      "type": "assistant",
+      "text": "Now I have everything I need. The current API uses `from qiskit_ibm_runtime.executor_sampler import Sampler` (introduced in v0.50.0), passes `mode=backend` for job mode (no session), and uses `from qiskit.transpiler import generate_preset_pass_manager`. Let me write `dj_qpu.py`:"
+    },
+    {
+      "type": "file",
+      "path": "dj_qpu.py",
+      "content": "\"\"\"Deutsch-Jozsa on 3 input qubits — simulator vs. real QPU (ibm_kingston).\n\nRequires:\n    QISKIT_IBM_TOKEN env var set to your IBM Quantum API token.\n\nRun:\n    uv run --with qiskit --with qiskit-ibm-runtime python dj_qpu.py\n\"\"\"\n\nimport os\n\nfrom qiskit import QuantumCircuit\nfrom qiskit.primitives import StatevectorSampler\nfrom qiskit.transpiler import generate_preset_pass_manager\nfrom qiskit_ibm_runtime import QiskitRuntimeService\nfrom qiskit_ibm_runtime.executor_sampler import Sampler\n\nN = 3\nSHOTS = 1024\nBACKEND_NAME = \"ibm_kingston\"\n\n\ndef oracle(kind: str) -> QuantumCircuit:\n    \"\"\"Constant oracle (always 0) or balanced oracle (parity of the inputs).\"\"\"\n    qc = QuantumCircuit(N + 1)\n    if kind == \"balanced\":\n        for q in range(N):\n            qc.cx(q, N)\n    return qc\n\n\ndef deutsch_jozsa(kind: str) -> QuantumCircuit:\n    qc = QuantumCircuit(N + 1, N)\n    qc.x(N)\n    qc.h(range(N + 1))\n    qc.compose(oracle(kind), inplace=True)\n    qc.h(range(N))\n    qc.measure(range(N), range(N))\n    return qc\n\n\n# ── 1. Simulator counts (local, no token needed) ──────────────────────────────\nsim_counts: dict[str, dict[str, int]] = {}\nfor kind in (\"constant\", \"balanced\"):\n    result = StatevectorSampler().run([deutsch_jozsa(kind)], shots=SHOTS).result()\n    sim_counts[kind] = result[0].data.c.get_counts()\n\n# ── 2. QPU counts (ibm_kingston, job mode — no sessions) ──────────────────────\ntoken = os.environ.get(\"QISKIT_IBM_TOKEN\")\nif not token:\n    raise EnvironmentError(\"QISKIT_IBM_TOKEN environment variable is not set.\")\n\nservice = QiskitRuntimeService(channel=\"ibm_quantum_platform\", token=token)\nbackend = service.backend(BACKEND_NAME)\n\npm = generate_preset_pass_manager(optimization_level=1, backend=backend)\n\nqpu_counts: dict[str, dict[str, int]] = {}\nfor kind in (\"constant\", \"balanced\"):\n    isa_circuit = pm.run(deutsch_jozsa(kind))\n    sampler = Sampler(mode=backend)\n    job = sampler.run([isa_circuit], shots=SHOTS)\n    print(f\"[{kind}] QPU job submitted — ID: {job.job_id()}\")\n    result = job.result()\n    qpu_counts[kind] = result[0].data.c.get_counts()\n\n# ── 3. Side-by-side results ───────────────────────────────────────────────────\nprint(f\"\\n{'oracle':<12}  {'simulator counts':<40}  {'QPU counts (ibm_kingston)'}\")\nprint(\"-\" * 90)\nfor kind in (\"constant\", \"balanced\"):\n    print(f\"{kind:<12}  {str(sim_counts[kind]):<40}  {qpu_counts[kind]}\")\n"
+    },
+    {
+      "type": "assistant",
+      "text": "Now let's verify it runs (the simulator half will work without a token; the QPU half will fail with a clear error on missing token, confirming the env-var guard works correctly):"
+    },
+    {
+      "type": "tool_call",
+      "tool": "shell",
+      "input": "cd . && uv run --with qiskit --with qiskit-ibm-runtime python dj_qpu.py 2>&1 || true"
+    },
+    {
+      "type": "run_output",
+      "text": "[constant] QPU job submitted — ID: <job-id>\n[balanced] QPU job submitted — ID: <job-id>\n\noracle        simulator counts                          QPU counts (ibm_kingston)\n------------------------------------------------------------------------------------------\nconstant      {'000': 1024}                             {'000': 1002, '010': 1, '100': 4, '001': 17}\nbalanced      {'111': 1024}                             {'111': 974, '101': 20, '110': 21, '011': 7, '001': 1, '100': 1}"
+    },
+    {
+      "type": "assistant",
+      "text": "It ran end-to-end successfully. Here's a summary of what was built and what the output shows:\n\n---\n\n## [`dj_qpu.py`](dj_qpu.py)\n\n### What changed from `dj_sim.py`\n\n| Concern | Implementation |\n|---|---|\n| **IBM token** | Read exclusively from `os.environ.get(\"QISKIT_IBM_TOKEN\")`; raises `EnvironmentError` if absent — never written to disk or printed |\n| **Service init** | [`QiskitRuntimeService(channel=\"ibm_quantum_platform\", token=token)`](dj_qpu.py:52) — no `save_account()`, no file I/O |\n| **Job mode (no session)** | [`Sampler(mode=backend)`](dj_qpu.py:62) — passing the backend object directly puts it in job mode; no `Session` wrapper |\n| **Transpiler** | [`generate_preset_pass_manager(optimization_level=1, backend=backend)`](dj_qpu.py:56) from `qiskit.transpiler`; circuits ISA-compiled before submission |\n| **Shots** | 1024 (unchanged) |\n| **Backend** | `ibm_kingston` |\n| **Sampler import** | `from qiskit_ibm_runtime.executor_sampler import Sampler` — the current client-side primitive (v0.50.0+) |\n\n### Live output\n\n```\noracle        simulator counts                          QPU counts (ibm_kingston)\n------------------------------------------------------------------------------------------\nconstant      {'000': 1024}                             {'000': 1002, '010': 1, '100': 4, '001': 17}\nbalanced      {'111': 1024}                             {'111': 974, '101': 20, '110': 21, '011': 7, '001': 1, '100': 1}\n```\n\nThe simulator gives the ideal deterministic result (`000` for constant, `111` for balanced). The QPU shows the expected dominant bitstrings with a small amount of noise — the algorithm is correctly identified in both cases."
+    }
+  ],
+  "pins": {
+    "qiskit-docs-mcp-server": "0.3.0",
+    "qiskit": "2.6.2",
+    "qiskit-ibm-runtime": "0.52.1"
+  }
+}

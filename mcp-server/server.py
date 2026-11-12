@@ -23,7 +23,14 @@ from typing import Any
 import httpx
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
-from mcp.types import TextContent, Tool
+from mcp.types import (
+    CallToolRequest,
+    CallToolResult,
+    ListToolsRequest,
+    ListToolsResult,
+    TextContent,
+    Tool,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -36,25 +43,45 @@ GRANITE_MODEL = os.getenv("GRANITE_MODEL", "granite3.1-dense:8b")
 
 
 async def explain_circuit(code: str) -> str:
-    """MCP tool: explain a Qiskit circuit using Qiskit Code Assistant via Ollama."""
+    """MCP tool: explain a Qiskit circuit using Qiskit Code Assistant via Ollama,
+    with an automatic fallback for beginner workshops when Ollama is offline."""
     prompt = (
         "You are Qiskit Code Assistant, an expert in quantum computing and Qiskit. "
         "Explain the following Qiskit circuit code clearly and concisely for a "
-        "workshop participant:\n\n"
+        "workshop participant who is new to programming:\n\n"
         f"```python\n{code}\n```"
     )
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        resp = await client.post(
-            f"{OLLAMA_HOST}/v1/chat/completions",
-            json={
-                "model": GRANITE_MODEL,
-                "messages": [{"role": "user", "content": prompt}],
-                "stream": False,
-            },
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        return data["choices"][0]["message"]["content"]
+    try:
+        async with httpx.AsyncClient(timeout=4.0) as client:
+            resp = await client.post(
+                f"{OLLAMA_HOST}/v1/chat/completions",
+                json={
+                    "model": GRANITE_MODEL,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "stream": False,
+                },
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            return data["choices"][0]["message"]["content"]
+    except Exception as e:
+        logger.info("Ollama assistant unavailable (%s); returning offline beginner explanation.", e)
+        # Built-in beginner-friendly fallback
+        parts = [
+            "💡 **IBM Bob's Quantum Guide** (Offline Assistant Mode):",
+            "",
+            "Here is the plain-English breakdown of your circuit:",
+        ]
+        if "QuantumCircuit" in code:
+            parts.append("- `QuantumCircuit`: Allocates your qubits (quantum bits) and classical readout bits.")
+        if ".h(" in code or "h(" in code:
+            parts.append("- `h` (Hadamard): Spins the qubit into 50/50 superposition (like a spinning coin in mid-air).")
+        if ".cx(" in code or "cx(" in code:
+            parts.append("- `cx` (CNOT): Entangles two qubits into synchronized magic twins (measuring one matches the other).")
+        if ".measure" in code:
+            parts.append("- `measure`: Catches the spinning coin to read out the final 0 or 1 result.")
+        parts.append("\n*Note: Running in zero-setup offline mode. Start Ollama with Granite to enable live generative AI responses.*")
+        return "\n".join(parts)
 
 
 # ---------------------------------------------------------------------------
@@ -84,23 +111,30 @@ TOOLS: list[Tool] = [
 def create_server() -> Server:
     server = Server("bob4q-mcp")
 
-    @server.list_tools()
-    async def handle_list_tools() -> list[Tool]:
-        return TOOLS
+    async def handle_list_tools(request: ListToolsRequest) -> ListToolsResult:
+        return ListToolsResult(tools=TOOLS)
 
-    @server.call_tool()
-    async def handle_call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
+    async def handle_call_tool(request: CallToolRequest) -> CallToolResult:
+        name = request.params.name
+        arguments = request.params.arguments or {}
         try:
             if name == "explain_circuit":
                 explanation = await explain_circuit(code=arguments["code"])
-                return [TextContent(type="text", text=explanation)]
-
+                return CallToolResult(content=[TextContent(type="text", text=explanation)])
             else:
-                return [TextContent(type="text", text=f"Unknown tool: {name}")]
-
+                return CallToolResult(
+                    content=[TextContent(type="text", text=f"Unknown tool: {name}")],
+                    is_error=True,
+                )
         except Exception as exc:  # noqa: BLE001
             logger.exception("Tool '%s' raised an error", name)
-            return [TextContent(type="text", text=f"Error: {exc}")]
+            return CallToolResult(
+                content=[TextContent(type="text", text=f"Error: {exc}")],
+                is_error=True,
+            )
+
+    server.add_request_handler("tools/list", ListToolsRequest, handle_list_tools)
+    server.add_request_handler("tools/call", CallToolRequest, handle_call_tool)
 
     return server
 
@@ -137,12 +171,14 @@ def start_http(port: int) -> None:
     # Tool call REST endpoint (for backend proxy)
     @app.post("/tools/{tool_name}")
     async def call_tool_rest(tool_name: str, body: dict[str, Any]) -> Any:
-        server_instance = create_server()
-        handler = server_instance._tool_handlers.get(tool_name)  # noqa: SLF001
-        if handler is None:
+        if tool_name not in {t.name for t in TOOLS}:
             return {"error": f"Tool '{tool_name}' not found"}
-        results = await handler(tool_name, body)
-        return {"result": results[0].text if results else ""}
+        request = CallToolRequest(params={"name": tool_name, "arguments": body})
+        result: CallToolResult = await server._request_handlers["tools/call"].handler(  # noqa: SLF001
+            request
+        )
+        first = result.content[0] if result.content else None
+        return {"result": first.text if isinstance(first, TextContent) else ""}
 
     logger.info("Starting MCP HTTP SSE server on port %d", port)
     uvicorn.run(app, host="0.0.0.0", port=port)  # noqa: S104

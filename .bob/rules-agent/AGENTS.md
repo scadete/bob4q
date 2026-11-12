@@ -20,16 +20,23 @@
 - No default exports except Next.js page/layout files
 
 ### Python packages
-- Each of `mcp-server/`, `manim/` has isolated `uv` env — never run `uv` from repo root for these; notebooks have no dedicated env, deps declared per-notebook via `uv run --with ...`
+- `mcp-server/` has an isolated `uv` env — never run `uv` from repo root; `manim/` is spec-only (no `pyproject.toml`, never `uv sync` it); notebooks have no dedicated env, deps declared per-notebook via `uv run --with ...`
 - Use `ruff check . && ruff format .` before committing Python — configured per-package
 
 ### Animations
-- CSS/JS React components only — no Manim render, no video files
-- `manim/scenes/*.py` are read as the visual reference spec; register components in `frontend/src/lib/animations.ts`
+- CSS/JS React components only — no Manim install/render, no video files
+- Workflow: spec scene in `manim/scenes/*.py` (Manim API, read-only) → validate concept with user → component in `frontend/src/components/animations/` + register in `frontend/src/lib/animations.ts`
+- Follow the Manim → CSS/JS translation rules in `manim/README.md`
 
 ### Testing
 - Python: `uv run pytest tests/test_specific.py` from the package directory
 - JS: `pnpm test <path/to/file.test.ts>` from `frontend/`
+
+### Quantum Beginner Mentoring
+- Use intuitive physical analogies: light switches (classical bits), spinning coins (superposition), and magic twin dice (entanglement).
+- Always generate clean, current Qiskit 2.x syntax (using `StatevectorSampler` / `SamplerV2`, never deprecated `execute()`).
+- Keep code snippets short (under 10 lines) and clearly commented for participants with no prior programming experience.
+- Preemptively catch beginner oversights (e.g., forgetting to measure qubits) with friendly, constructive tips.
 
 ### Memory
 - Update relevant `MEMORY-*.md` file after any architectural or tool decision

@@ -7,7 +7,7 @@ import rehypeKatex from "rehype-katex";
 import rehypeStringify from "rehype-stringify";
 import remarkRehype from "remark-rehype";
 import { getTranslations } from "next-intl/server";
-import LocaleSwitcher from "@/components/LocaleSwitcher";
+import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 
 export default async function DocsPage({
   params: { locale, slug },
@@ -44,7 +44,7 @@ export default async function DocsPage({
       <div
         style={{ marginBottom: "1.5rem", display: "flex", justifyContent: "flex-end" }}
       >
-        <LocaleSwitcher currentLocale={locale} slug={slug} labelKey="locale_switcher" />
+        <LocaleSwitcher />
       </div>
       <article
         className="prose"

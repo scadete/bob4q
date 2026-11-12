@@ -37,20 +37,21 @@ podman compose up mcp     # containerized (Docker Compose works too)
 
 ### Animations
 Animations are **CSS/JS React components**, not rendered Manim video. The
-`manim/scenes/*.py` files are the reference spec for what each animation depicts
-(read them, don't render them). Build/register components in
-`frontend/src/lib/animations.ts`. Validate each animation's concept with the
-user before implementing it.
+`manim/scenes/*.py` files are reference specs written in Manim's API (read them,
+never install or render them; `manim/` has no `pyproject.toml` on purpose).
+Workflow for a new animation: write/approve a spec scene in `manim/scenes/` →
+validate the concept with the user → build the component and register it in
+`frontend/src/lib/animations.ts`. Translation rules (Manim → CSS/JS, colors →
+Carbon tokens) are in `manim/README.md`.
 
 ### Notebooks (run locally from repo root)
 ```bash
 # Notebooks live in notebooks/ and run locally in Jupyter (not in the browser).
-uv run --with jupyterlab --with qiskit==1.2.0 --with matplotlib --with pylatexenc \
-  jupyter lab notebooks/01-quantum-fundamentals.ipynb
+uv run --with jupyterlab --with qiskit --with matplotlib --with pylatexenc --with httpx \
+  jupyter lab notebooks/01-hello-quantum-with-bob.ipynb
 # The /lab route presents them read-only; the "Run locally" panel shows this command.
-# Notebooks 02/03/05 also need --with qiskit-aer (circuit execution runs in-process via
-# notebooks/lib/backend.py, no server); 03 additionally needs --with qiskit-ibm-runtime for
-# the real-QPU path. See each notebook's intro cell for its exact command.
+# Notebook 04 also includes --with qiskit-aer --with qiskit-ibm-runtime for the real-QPU path.
+# See each notebook's intro cell for its exact command.
 ```
 
 ### Root
@@ -71,7 +72,8 @@ podman compose up
 
 ### Notebooks → `/lab` presentation
 Notebooks in `notebooks/` are **run locally** by developers (not in the browser). The `/lab` route presents them read-only: `src/lib/notebooks.ts` is the registry + loader (reads `../notebooks/*.ipynb`), `/lab` lists them, `/lab/[slug]` renders markdown cells (KaTeX-aware, via `remark()` → `remark-rehype` → `rehype-katex`) and code cells as `<pre>` blocks, with a "Run locally" panel showing the `uv run … jupyter lab` command.
-- Add a notebook: drop the `.ipynb` in `notebooks/`, add an entry to `NOTEBOOKS` in `src/lib/notebooks.ts`
+- Add a notebook: drop the `.ipynb` in `notebooks/`, add an entry to `NOTEBOOKS` in `src/lib/notebooks.ts`, and add its title/description under `notebooks.<slug>` in every `frontend/messages/{locale}.json`
+- Notebook translations are separate files beside the English one: `notebooks/<slug>.<locale>.ipynb` (e.g. `01-quantum-fundamentals.pt-BR.ipynb`; same folder so the `lib/` import works). `/{locale}/lab/[slug]` picks the localized file and falls back to English with a notice. Keep code cells in sync between language versions — only prose, comments, and printed strings differ
 - Notebooks use `qiskit.primitives.StatevectorSampler` (no Aer dependency); classical register is named `c`, so read counts via `result[0].data.c`
 
 ### MCP Server transport duality
@@ -88,15 +90,16 @@ are the visual reference only.
 Always import from `@carbon/react`, never `carbon-components-react`. Use Carbon tokens for all colors/spacing — no hardcoded hex values.
 
 ### i18n — two separate systems
-- `frontend/messages/` → Next.js UI strings (via `next-intl`)
+- `frontend/messages/` → Next.js UI strings (via `next-intl`), including all slide copy (`slides.<id>.title/body`; `demo/page.tsx` only holds slide ids + animations) and notebook titles/descriptions (`notebooks.<slug>`)
 - `docs/i18n/` → Workshop documentation (Markdown, one folder per locale)
-Both must be updated together when adding user-facing content.
+- `notebooks/<slug>.<locale>.ipynb` → translated notebooks (see Notebooks above)
+Both must be updated together when adding user-facing content. Locales are defined in `frontend/src/i18n/config.ts`; `LocaleSwitcher` swaps the `/[locale]` path segment on any page.
 
 ### Qiskit Code Assistant (local model only)
 Qiskit Code Assistant runs only as a local model (no cloud API), served via Ollama. The MCP server's sole purpose is to wrap it (tool: `explain_circuit`) — it does not execute circuits. Circuit execution and backend listing (`run_via_backend`, `list_backends`) live in `notebooks/lib/backend.py` and run in-process inside each notebook's own kernel, not behind any server. For workshops: participants either run the MCP server locally or pull the pre-built container image `ghcr.io/YOUR_ORG/bob4q-mcp:latest` via Podman or Docker.
 
 ### Python env isolation
-Each Python package (`mcp-server/`, `manim/`) has its own `pyproject.toml` + `uv.lock`. Notebooks have no dedicated pyproject — their deps are declared per-notebook via `uv run --with ...` (see each notebook's intro cell). Never share venvs across packages.
+The only Python package is `mcp-server/`, with its own `pyproject.toml` + `uv.lock`. `manim/` is spec-only and has no env. Notebooks have no dedicated pyproject — their deps are declared per-notebook via `uv run --with ...` (see each notebook's intro cell). Never share venvs across packages.
 
 ## Code Style
 
@@ -116,7 +119,7 @@ Each Python package (`mcp-server/`, `manim/`) has its own `pyproject.toml` + `uv
 bob4q/
 ├── frontend/          # Next.js app
 ├── mcp-server/        # Qiskit MCP server (stdio + HTTP)
-├── manim/             # Animation scenes (Python)
+├── manim/             # Animation reference specs (Manim API, never rendered)
 ├── docs/              # Workshop docs (i18n Markdown)
 ├── docker/            # Dockerfiles + compose
 └── scripts/           # Setup helpers for workshop participants

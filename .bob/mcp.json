@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "qiskit-docs": {
+      "command": "uvx",
+      "args": ["qiskit-docs-mcp-server"],
+      "alwaysAllow": ["search_docs_tool", "get_page_tool"],
+      "disabled": false
+    }
+  }
+}

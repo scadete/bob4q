@@ -1,0 +1,10 @@
+/* Compact switches so labels like "PT-BR" are never truncated. */
+.switcher {
+  width: 7.5rem;
+  flex-shrink: 0;
+}
+
+.switcher :global(.cds--content-switcher:not(.cds--content-switcher--icon-only) .cds--content-switcher-btn) {
+  padding-inline: 0.5rem;
+  justify-content: center;
+}

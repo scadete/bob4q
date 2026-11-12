@@ -181,7 +181,7 @@ export function AmplitudeAmplificationAnimation() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const stageSize = "min(560px, 94vw)";
+  const stageSize = "min(max(560px, 38vw), calc(100vw - 2rem), calc((100dvh - 32rem) * 1.7))";
   return (
     <div
       role="img"

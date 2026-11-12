@@ -1,0 +1,106 @@
+/* Layout rules that need media queries (inline styles cannot express them). */
+
+.stage {
+  flex: 1;
+  min-height: 0; /* let the flex child shrink so the nav bar never leaves the viewport */
+  overflow-y: auto;
+  display: flex;
+  padding: 2rem 3rem;
+}
+
+/* margin: auto centers vertically when content fits, and lets it scroll from the top when it does not. */
+.content {
+  margin: auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.animation {
+  margin-bottom: 2rem;
+  max-width: 100%;
+}
+
+.title {
+  font-size: clamp(1.75rem, 4vw, 3rem);
+  font-weight: 300;
+  color: var(--cds-text-primary);
+  margin-bottom: 1rem;
+}
+
+.body {
+  font-size: clamp(1rem, 2vw, 1.375rem);
+  color: var(--cds-text-secondary);
+  max-width: min(40rem + 10vw, 56rem);
+  line-height: 1.6;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 1.5rem;
+  border-top: 1px solid var(--cds-border-subtle);
+  background: var(--cds-layer-01);
+  flex-shrink: 0;
+}
+
+.navGroup {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.counter {
+  font-size: 0.875rem;
+  color: var(--cds-text-secondary);
+  white-space: nowrap;
+}
+
+.counterShort {
+  display: none;
+}
+
+@media (max-width: 671px) {
+  .stage {
+    padding: 1.5rem 1rem;
+  }
+
+  .animation {
+    margin-bottom: 1.5rem;
+  }
+
+  .nav {
+    padding: 0.25rem 0.5rem;
+    gap: 0.25rem;
+  }
+
+  .navGroup {
+    gap: 0;
+  }
+
+  /* Icon-only nav buttons on phones; the label stays for screen readers. */
+  .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .navButton {
+    padding-inline: 0.5rem !important;
+  }
+
+  .counterLong {
+    display: none;
+  }
+
+  .counterShort {
+    display: inline;
+  }
+}

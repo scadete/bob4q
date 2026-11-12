@@ -1,0 +1,56 @@
+{
+  "id": "uc1_coin_two_qubits",
+  "source": "recorded",
+  "bobVersion": "2.0.9",
+  "recordedAt": "2026-11-12",
+  "predictAnswer": 2,
+  "steps": [
+    {
+      "type": "prompt",
+      "text": "/qiskit-beginner-circuit two coins that always land the same way",
+      "animation": "entanglement"
+    },
+    {
+      "type": "skill",
+      "name": "qiskit-beginner-circuit"
+    },
+    {
+      "type": "tool_call",
+      "tool": "mcp__qiskit-docs__search_docs_tool",
+      "input": "{\"query\": \"CX gate entanglement Bell state\"}"
+    },
+    {
+      "type": "tool_result",
+      "text": "Large-scale hardware example\nhttps://quantum.cloud.ibm.com/docs/en/tutorials/chsh-inequality#large-scale-hardware-example\nCheck your understanding\nhttps://quantum.cloud.ibm.com/learning/en/courses/use-a-qc-today/build-and-run-your-first-quantum-program#check-your-understanding-1\nPut it all together\nhttps://quantum.cloud.ibm.com/docs/en/tutorials/long-range-entanglement#put-it-all-together"
+    },
+    {
+      "type": "assistant",
+      "text": "The idea: **two magic twin coins** — whenever you flip them, they always land the same way (both heads or both tails, never one of each). That's a **Bell state** — two qubits entangled so their measurement results are perfectly correlated."
+    },
+    {
+      "type": "file",
+      "path": "recordings/work/twins.py",
+      "content": "from qiskit import QuantumCircuit\nfrom qiskit.primitives import StatevectorSampler\n\nqc = QuantumCircuit(2, 2)          # 2 qubits, 2 classical bits\nqc.h(0)                            # put coin 0 into superposition (spinning)\nqc.cx(0, 1)                        # entangle: coin 1 copies whatever coin 0 decides\nqc.measure([0, 1], [0, 1])         # flip both coins and record results\n\nsampler = StatevectorSampler()\njob = sampler.run([qc], shots=1000)\ncounts = job.result()[0].data.c.get_counts()\nprint(counts)\n",
+      "animation": "gates"
+    },
+    {
+      "type": "tool_call",
+      "tool": "shell",
+      "input": "uv run --with qiskit python recordings/work/twins.py"
+    },
+    {
+      "type": "run_output",
+      "text": "{'00': 492, '11': 508}",
+      "animation": "entanglement"
+    },
+    {
+      "type": "assistant",
+      "text": "Here's what was built and what it means:\n\n---\n\n### [`recordings/work/twins.py`](recordings/work/twins.py)\n\n```\n{'00': 492, '11': 508}\n```\n\n**The two twin coins** — out of 1000 flips, they landed **heads-heads (`00`) about 492 times** and **tails-tails (`11`) about 508 times**. The combination `01` or `10` (one heads, one tails) **never appeared** — the coins are magically linked.\n\nHere's how the circuit works:\n\n| Gate | What it does |\n|---|---|\n| [`H`](https://quantum.cloud.ibm.com/docs/en/api/qiskit/circuit#quantum-circuit-model) on qubit 0 | Sets coin 0 spinning — it's neither heads nor tails yet |\n| [`CX`](https://quantum.cloud.ibm.com/docs/en/api/qiskit/circuit#quantum-circuit-model) (CNOT) on (0 → 1) | Entangles coin 1: *\"whatever coin 0 lands, I'll land the same\"* |\n| `measure` | Forces both coins to land — instantly, always together |\n\nThis is the **Bell state** Φ⁺, the simplest form of quantum entanglement. No matter how far apart the two coins are, they always agree.\n\n---\n\n> 💡 **Beginner tip:** Notice we used `QuantumCircuit(2, 2)` — two qubits **and** two classical bits. A common slip is writing `QuantumCircuit(2)` (no classical bits), then getting an error when you try to measure, because there's nowhere to store the result!"
+    }
+  ],
+  "pins": {
+    "Qiskit/skills": "d031f75",
+    "qiskit-docs-mcp-server": "0.3.0",
+    "qiskit": "2.6.2"
+  }
+}

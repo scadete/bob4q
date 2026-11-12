@@ -83,7 +83,7 @@ export function ResultsHistogramAnimation() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const stageSize = "min(340px, 84vw)";
+  const stageSize = "min(max(340px, 22vw), calc(100vw - 2rem))";
   return (
     <div
       role="img"

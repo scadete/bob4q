@@ -211,7 +211,7 @@ export function EntanglementAnimation() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const stageSize = "min(380px, 88vw)";
+  const stageSize = "min(max(380px, 28vw), calc(100vw - 2rem), calc((100dvh - 30rem) * 2))";
   const monoLabel = { width: "2.4rem", fontFamily: "'IBM Plex Mono', monospace" } as const;
   return (
     <div

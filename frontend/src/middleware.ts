@@ -1,9 +1,9 @@
-import { locales } from "@/i18n/request";
+import { defaultLocale, locales } from "@/i18n/config";
 import createMiddleware from "next-intl/middleware";
 
 export default createMiddleware({
   locales,
-  defaultLocale: "en",
+  defaultLocale,
 });
 
 export const config = {

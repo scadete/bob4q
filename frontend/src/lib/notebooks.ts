@@ -1,5 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { defaultLocale } from "@/i18n/config";
 
 /**
  * Notebooks are authored and committed under the repo-root `notebooks/` folder
@@ -12,15 +13,12 @@ import path from "path";
  */
 
 export interface NotebookMeta {
-  /** URL slug, e.g. "01-quantum-fundamentals" */
+  /**
+   * URL slug and English file basename, e.g. "01-quantum-fundamentals".
+   * Title/description live in `messages/{locale}.json` under `notebooks.<slug>`.
+   */
   slug: string;
-  /** File name under notebooks/, e.g. "01-quantum-fundamentals.ipynb" */
-  file: string;
-  /** Repo-relative path shown to the developer */
-  repoPath: string;
-  title: string;
-  description: string;
-  /** Pinned qiskit version for the "run locally" command. Defaults to "1.2.0". */
+  /** Optional pinned qiskit version for the "run locally" command. Defaults to the latest release (2.x). */
   qiskitVersion?: string;
   /** Extra `--with` packages beyond jupyterlab/qiskit/matplotlib/pylatexenc. */
   extraDeps?: string[];
@@ -34,53 +32,19 @@ export interface NotebookCell {
 /**
  * Registry of notebooks presented in the lab. Order is presentation order.
  * Add an entry here when a new notebook lands in `notebooks/`.
+ *
+ * Localized copies sit next to the English file as `<slug>.<locale>.ipynb`
+ * (e.g. `01-quantum-fundamentals.pt-BR.ipynb`) so they share `notebooks/lib/`.
  */
 export const NOTEBOOKS: NotebookMeta[] = [
+  { slug: "01-hello-quantum-with-bob", extraDeps: ["httpx"] },
+  { slug: "02-entanglement-magic-coins", extraDeps: ["httpx"] },
+  { slug: "03-modern-qiskit-guardrails", extraDeps: ["httpx"] },
   {
-    slug: "01-quantum-fundamentals",
-    file: "01-quantum-fundamentals.ipynb",
-    repoPath: "notebooks/01-quantum-fundamentals.ipynb",
-    title: "Quantum Fundamentals",
-    description:
-      "Build your first qubit, put it in superposition, and create a Bell state — using Qiskit's StatevectorSampler.",
-  },
-  {
-    slug: "02-first-circuit-with-bob",
-    file: "02-first-circuit-with-bob.ipynb",
-    repoPath: "notebooks/02-first-circuit-with-bob.ipynb",
-    title: "First Circuit with IBM Bob",
-    description:
-      "Ask Bob to write and explain a Bell circuit, then run it locally on the Aer simulator.",
-    extraDeps: ["httpx", "qiskit-aer"],
-  },
-  {
-    slug: "03-simulator-vs-qpu",
-    file: "03-simulator-vs-qpu.ipynb",
-    repoPath: "notebooks/03-simulator-vs-qpu.ipynb",
-    title: "Simulator vs Real QPU",
-    description:
-      "Run the same circuit on Aer and, when an IBMQ_API_TOKEN is set, on real IBM Quantum hardware.",
+    slug: "04-simulator-vs-real-qpu",
     extraDeps: ["httpx", "qiskit-aer", "qiskit-ibm-runtime"],
   },
-  {
-    slug: "04-quantum-advantage-oracles",
-    file: "04-quantum-advantage-oracles.ipynb",
-    repoPath: "notebooks/04-quantum-advantage-oracles.ipynb",
-    title: "Quantum Advantage & Oracles",
-    description:
-      "Recover a hidden bitstring classically (one query per bit) vs quantumly (one query, via phase kickback) — the Bernstein–Vazirani algorithm.",
-    extraDeps: ["httpx"],
-  },
-  {
-    slug: "05-grover-sat-capstone",
-    file: "05-grover-sat-capstone.ipynb",
-    repoPath: "notebooks/05-grover-sat-capstone.ipynb",
-    title: "Grover SAT Capstone",
-    description:
-      "Ask Bob to author a PhaseOracle for a boolean formula, run Grover on the Aer simulator, and verify the result against a classical brute-force search.",
-    qiskitVersion: "2.0.0",
-    extraDeps: ["httpx", "qiskit-algorithms==0.4.0", "qiskit-aer"],
-  },
+  { slug: "05-bobalytics-and-capstone", extraDeps: ["httpx"] },
 ];
 
 export function listNotebooks(): NotebookMeta[] {
@@ -88,7 +52,43 @@ export function listNotebooks(): NotebookMeta[] {
 }
 
 export function getNotebookMeta(slug: string): NotebookMeta | undefined {
-  return NOTEBOOKS.find((n) => n.slug === slug);
+  const normalized = slug.replace(/\.ipynb$/, "");
+  return NOTEBOOKS.find((n) => n.slug === normalized);
+}
+
+const notebooksDir = (): string => path.join(process.cwd(), "..", "notebooks");
+
+/** File name of a notebook for a locale (English is the un-suffixed file). */
+export function notebookFileName(slug: string, locale: string): string {
+  return locale === defaultLocale ? `${slug}.ipynb` : `${slug}.${locale}.ipynb`;
+}
+
+export interface ResolvedNotebook {
+  /** File name under notebooks/ */
+  file: string;
+  /** Repo-relative path shown to the developer */
+  repoPath: string;
+  /** True when no translation exists and the English file is used instead. */
+  isFallback: boolean;
+}
+
+/** Picks the localized notebook file if present, else the English one. */
+export async function resolveNotebook(
+  slug: string,
+  locale: string
+): Promise<ResolvedNotebook> {
+  const localized = notebookFileName(slug, locale);
+  let file = localized;
+  let isFallback = false;
+  if (locale !== defaultLocale) {
+    try {
+      await fs.access(path.join(notebooksDir(), localized));
+    } catch {
+      file = notebookFileName(slug, defaultLocale);
+      isFallback = true;
+    }
+  }
+  return { file, repoPath: `notebooks/${file}`, isFallback };
 }
 
 /** ipynb cell `source` is either a string or an array of line strings. */
@@ -100,7 +100,7 @@ function joinSource(source: unknown): string {
 
 /** Reads a notebook file and returns its cells as {type, source}. */
 export async function loadNotebookCells(file: string): Promise<NotebookCell[]> {
-  const filePath = path.join(process.cwd(), "..", "notebooks", file);
+  const filePath = path.join(notebooksDir(), file);
   const raw = await fs.readFile(filePath, "utf8");
   const nb = JSON.parse(raw) as {
     cells?: Array<{ cell_type: string; source: unknown }>;

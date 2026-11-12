@@ -1,0 +1,154 @@
+{
+  "id": "uc3_migrate_skill",
+  "source": "recorded",
+  "bobVersion": "2.0.9",
+  "recordedAt": "2026-11-12",
+  "predictAnswer": 1,
+  "steps": [
+    {
+      "type": "prompt",
+      "text": "/migrate-qiskit-ibm-runtime Migrate deutsch_jozsa.py to the latest Qiskit release. Then run it."
+    },
+    {
+      "type": "skill",
+      "name": "migrate-qiskit-ibm-runtime"
+    },
+    {
+      "type": "tool_call",
+      "tool": "read_file",
+      "input": "{\"path\": \"deutsch_jozsa.py\"}"
+    },
+    {
+      "type": "tool_result",
+      "text": "Contents of file deutsch_jozsa.py:\n\n1 | \"\"\"Deutsch-Jozsa on 3 input qubits (Qiskit 1.x style).\"\"\"\n2 | \n3 | from qiskit import QuantumCircuit\n4 | from qiskit.primitives import Sampler\n5 | \n6 | N = 3\n7 | \n8 | \n9 | def oracle(kind: str) -> QuantumCircuit:\n10 |     \"\"\"Constant oracle (always 0) or balanced oracle (parity of the inputs).\"\"\"\n11 |     qc = QuantumCircuit(N + 1)\n12 |     if kind == \"balanced\":\n13 |         for q in range(N):\n14 |             qc.cx(q, N)\n15 |     return qc\n16 | \n17 | \n18 | def deutsch_jozsa(kind: str) -> QuantumCircuit:\n19 |     qc = QuantumCircuit(N + 1, N)\n20 |     q\n..."
+    },
+    {
+      "type": "assistant",
+      "text": "Now let me read the registry to determine which changes apply:"
+    },
+    {
+      "type": "tool_call",
+      "tool": "read_file",
+      "input": "{\"path\": \".bob/skills/migrate-qiskit-ibm-runtime/registry.yaml\"}"
+    },
+    {
+      "type": "tool_result",
+      "text": "Contents of file .bob/skills/migrate-qiskit-ibm-runtime/registry.yaml:\n\n1 | # qiskit-ibm-runtime Migration Registry\n2 | #\n3 | # This file is the entry point for the migrate-qiskit-ibm-runtime skill. It\n4 | # enumerates every SUPPORTED migration CHANGE (a breaking change, or a group of\n5 | # related ones, in qiskit-ibm-runtime) with routing metadata. It does NOT\n6 | # contain the migration content itself — each change grounds in either a live\n7 | # doc `url` (release notes / official migration guide) or a hand-curated LOCAL\n8 | # `guide` in this skill folder. Never treat this file's `note` or `\n..."
+    },
+    {
+      "type": "assistant",
+      "text": "Now let me check what's installed and read the local guide for v1-to-client-side:"
+    },
+    {
+      "type": "tool_call",
+      "tool": "shell",
+      "input": "python -c \"import qiskit_ibm_runtime as q; print(q.__version__)\" 2>/dev/null || echo \"NOT_INSTALLED\""
+    },
+    {
+      "type": "tool_call",
+      "tool": "shell",
+      "input": "python -c \"import qiskit; print(qiskit.__version__)\" 2>/dev/null || echo \"NOT_INSTALLED\""
+    },
+    {
+      "type": "run_output",
+      "text": "NOT_INSTALLED"
+    },
+    {
+      "type": "run_output",
+      "text": "NOT_INSTALLED"
+    },
+    {
+      "type": "tool_call",
+      "tool": "shell",
+      "input": "uv run --with qiskit python -c \"import qiskit; print(qiskit.__version__)\""
+    },
+    {
+      "type": "run_output",
+      "text": "2.6.2"
+    },
+    {
+      "type": "tool_call",
+      "tool": "shell",
+      "input": "uv run --with qiskit python -c \"import qiskit_ibm_runtime; print(qiskit_ibm_runtime.__version__)\" 2>/dev/null || echo \"NOT_INSTALLED\""
+    },
+    {
+      "type": "run_output",
+      "text": "NOT_INSTALLED"
+    },
+    {
+      "type": "assistant",
+      "text": "**Key finding**: `qiskit-ibm-runtime` is **not** installed in the `uv run --with qiskit` environment. This script uses `from qiskit.primitives import Sampler` — the **Qiskit reference/statevector primitive**, not the runtime primitive.\n\nLet me check which version of Qiskit this targets and what the migration path for `qiskit.primitives.Sampler` is:"
+    },
+    {
+      "type": "tool_call",
+      "tool": "shell",
+      "input": "uv run --with qiskit python -c \"from qiskit.primitives import Sampler; print('ok')\" 2>&1"
+    },
+    {
+      "type": "tool_call",
+      "tool": "shell",
+      "input": "uv run --with qiskit python -c \"from qiskit.primitives import StatevectorSampler; print('StatevectorSampler ok')\" 2>&1"
+    },
+    {
+      "type": "run_output",
+      "text": "StatevectorSampler ok"
+    },
+    {
+      "type": "tool_call",
+      "tool": "shell",
+      "input": "uv run --with qiskit python -c \"import qiskit.primitives as p; print(dir(p))\" 2>&1"
+    },
+    {
+      "type": "run_output",
+      "text": "['BackendEstimatorV2', 'BackendSamplerV2', 'BaseEstimatorV1', 'BaseEstimatorV2', 'BasePrimitiveJob', 'BaseSamplerV1', 'BaseSamplerV2', 'BindingsArray', 'BindingsArrayLike', 'BitArray', 'DataBin', 'EstimatorPub', 'EstimatorPubLike', 'EstimatorResult', 'ObservableLike', 'ObservablesArray', 'ObservablesArrayLike', 'ParameterLike', 'PrimitiveJob', 'PrimitiveResult', 'PubResult', 'SamplerPub', 'SamplerPubLike', 'SamplerPubResult', 'SamplerResult', 'StatevectorEstimator', 'StatevectorSampler', '__all__', '__builtins__', '__cached__', '__doc__', '__file__', '__loader__', '__name__', '__package__', '_\n..."
+    },
+    {
+      "type": "assistant",
+      "text": "Now I have a complete picture. This script uses `qiskit.primitives.Sampler` (the **Qiskit reference V1 Sampler** — not qiskit-ibm-runtime). In Qiskit 2.x that class was removed entirely. The migration is:\n\n- `from qiskit.primitives import Sampler` → `from qiskit.primitives import StatevectorSampler`\n- `Sampler().run(qc, shots=1024).result()` → V2 PUB-based `.run([qc], shots=1024).result()`  \n- `result.quasi_dists[0].binary_probabilities()` → `result[0].data.c.get_counts()` (using `BitArray`, classical register named `c`)\n\nLet me check the Qiskit docs to confirm the exact V2 result API:"
+    },
+    {
+      "type": "tool_call",
+      "tool": "shell",
+      "input": "uv run --with qiskit python -c \"\nfrom qiskit import QuantumCircuit\nfrom qiskit.primitives import StatevectorSampler\nqc = QuantumCircuit(1, 1)\nqc.h(0)\nqc.measure(0, 0)\nresult = StatevectorSampler().run([qc], shots=100).result()\nprint(type(result))\nprint(type(result[0]))\nprint(dir(result[0].data))\npub_result = result[0]\nprint(pub_result.data.c)\nprint(type(pub_result.data.c))\nprint(pub_result.data.c.get_counts())\n\" 2>&1"
+    },
+    {
+      "type": "run_output",
+      "text": "<class 'qiskit.primitives.containers.primitive_result.PrimitiveResult'>\n<class 'qiskit.primitives.containers.sampler_pub_result.SamplerPubResult'>\n['_FIELDS', '_FIELD_TYPES', '_RESTRICTED_NAMES', '_SHAPE', '__abstractmethods__', '__annotations__', '__class__', '__class_getitem__', '__contains__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__firstlineno__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__iter__', '__le__', '__len__', '__lt__', '__module__', '__ne__', '__new__', '__non_callable_\n..."
+    },
+    {
+      "type": "assistant",
+      "text": "The result API is confirmed. Now let me apply the migration:"
+    },
+    {
+      "type": "tool_call",
+      "tool": "edit deutsch_jozsa.py",
+      "input": "<<<<<<< SEARCH\n:start_line:1\n-------\n\"\"\"Deutsch-Jozsa on 3 input qubits (Qiskit 1.x style).\"\"\"\n\nfrom qiskit import QuantumCircuit\nfrom qiskit.primitives import Sampler\n=======\n\"\"\"Deutsch-Jozsa on 3 input qubits (Qiskit 2.x style).\"\"\"\n\nfrom qiskit import QuantumCircuit\nfrom qiskit.primitives import StatevectorSampler\n>>>>>>> REPLACE\n\n<<<<<<< SEARCH\n:start_line:28\n-------\nfor kind in (\"constant\", \"balanced\"):\n    qc = deutsch_jozsa(kind)\n    result = Sampler().run(qc, shots=1024).result()\n    dist = result.quasi_dists[0].binary_probabilities()\n    verdict = \"constant\" if dist.get(\"0\" * N, 0) > 0.9 else \"balanced\"\n    print(kind, \"->\", verdict, dist)\n=======\nfor kind in (\"constant\", \"balanced\"):\n    qc = deutsch_jozsa(kind)\n    result = StatevectorSampler().run([qc], shots=1024).result()\n    counts = result[0].data.c.get_counts()\n    total = sum(counts.values())\n    verdict = \"constant\" if counts.get(\"0\" * N, 0) / total > 0.9 else \"balanced\"\n    print(kind, \"->\", verdict, counts)\n>>>>>>> REPLACE\n"
+    },
+    {
+      "type": "assistant",
+      "text": "Now run it:"
+    },
+    {
+      "type": "tool_call",
+      "tool": "shell",
+      "input": "uv run --with qiskit python deutsch_jozsa.py"
+    },
+    {
+      "type": "run_output",
+      "text": "constant -> constant {'000': 1024}\nbalanced -> balanced {'111': 1024}"
+    },
+    {
+      "type": "assistant",
+      "text": "Both oracles are correctly identified."
+    },
+    {
+      "type": "assistant",
+      "text": "Here's the migration report:\n\n---\n\n## Migration Report — `deutsch_jozsa.py`\n\n### 1. Versions\n- **Source**: Qiskit 1.x style (`qiskit.primitives.Sampler` V1 interface)\n- **Target installed**: Qiskit **2.6.2** (`qiskit-ibm-runtime` is not installed and not needed here — this workload uses the local statevector primitive only)\n- **Hop B scope**: Not applicable — no `qiskit-ibm-runtime` primitive involved\n\n### 2. Domain & Change Applied\n**Domain: primitives** — Qiskit reference V1 `Sampler` → V2 `StatevectorSampler`\n\n> Note: The `migrate-qiskit-ibm-runtime` skill's `v1-to-v2` change covers the *runtime* primitives only. This script uses `from qiskit.primitives import Sampler`, the **local statevector primitive** — a separate change in Qiskit core that removed `Sampler` and `Estimator` from `qiskit.primitives` in Qiskit 2.x in favor of `StatevectorSampler`/`StatevectorEstimator`.\n\n### 3. Files Changed\n[`deutsch_jozsa.py`](deutsch_jozsa.py)\n\n### 4. Applied Automatically\n\n| Row | Change |\n|-----|--------|\n| Import | `from qiskit.primitives import Sampler` → `from qiskit.primitives import StatevectorSampler` |\n| Docstring | Updated \"1.x style\" → \"2.x style\" |\n| `.run(qc, shots=1024)` | → V2 PUB syntax: `.run([qc], shots=1024)` — circuit wrapped in a list |\n| `result.quasi_dists[0].binary_probabilities()` | → `result[0].data.c.get_counts()` — V2 result accesses the `BitArray` on the classical register named `c` |\n| Verdict threshold | `dist.get(...) > 0.9` → `counts.get(...) / total > 0.9` — counts are integers, not probabilities, so a proportion is computed |\n\n### 5. Needs Your Decision\nNone — all changes are mechanical and results-preserving.\n\n### 6. Verification\n✅ Run passed cleanly:\n```\nconstant -> constant {'000': 1024}\nbalanced -> balanced {'111': 1024}\n```\nDeterministic results (statevector simulator) — `000` is the only outcome for the constant oracle (no entanglement with input qubits), `111` for the balanced parity oracle. Both verdicts correct."
+    }
+  ],
+  "pins": {
+    "Qiskit/skills": "d031f75",
+    "qiskit": "2.6.2"
+  },
+  "whatIf": "uc3_migrate_docs"
+}

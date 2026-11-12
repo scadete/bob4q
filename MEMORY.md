@@ -27,6 +27,7 @@
 - [LAB] Notebooks use helper modules from `notebooks/lib/` to keep cell code minimal
 - [LAB] Simulation via `qiskit.primitives.StatevectorSampler` (no Aer); optional real QPU via
   `qiskit_ibm_runtime`, run in-process in `notebooks/lib/backend.py` (no FastAPI backend)
+- [LAB] Re-architected /lab into an interactive Carbon walkthrough + 5 beginner-friendly notebooks (2026-10-08) focusing on the IBM Bob experience for complete beginners in programming. Archived legacy lab to backup/legacy-lab/. Standardized on modern Qiskit 1.x without extra MCP servers; local Ollama assistant is completely optional with zero-hang offline fallbacks.
 - [DEMO] `/demo` route = presenter-driven full-screen slideshow (Carbon layout + CSS/JS animations); facilitator controls, participants watch
 
 ## Status

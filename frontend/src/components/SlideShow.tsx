@@ -8,6 +8,8 @@ import { Button } from "@carbon/react";
 import { ChevronLeft, ChevronRight, Home, Maximize } from "@carbon/icons-react";
 import type { ReactNode } from "react";
 import { getAnimation, type AnimationName } from "@/lib/animations";
+import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import styles from "./SlideShow.module.css";
 
 export interface Slide {
   title: string;
@@ -68,94 +70,57 @@ export default function SlideShow({ slides }: SlideShowProps) {
         overflow: "hidden",
       }}
     >
-      {/* Slide content */}
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "3rem 4rem",
-          textAlign: "center",
-        }}
-      >
-        {slide.animation &&
-          (() => {
-            const Animation = getAnimation(slide.animation);
-            if (Animation) {
+      {/* Slide content (scrolls instead of pushing the nav bar off-screen) */}
+      <div className={styles.stage}>
+        <div className={styles.content}>
+          {slide.animation &&
+            (() => {
+              const Animation = getAnimation(slide.animation);
+              if (Animation) {
+                return (
+                  <div className={styles.animation}>
+                    <Animation />
+                  </div>
+                );
+              }
+              // Animation not built yet — keep the slide usable with a placeholder.
               return (
-                <div style={{ marginBottom: "2rem" }}>
-                  <Animation />
+                <div
+                  className={styles.animation}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    height: "40vh",
+                    width: "min(640px, 100%)",
+                    border: "1px dashed var(--cds-border-subtle)",
+                    borderRadius: "4px",
+                    color: "var(--cds-text-helper)",
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  {t("animation_pending", { scene: slide.animation })}
                 </div>
               );
-            }
-            // Animation not built yet — keep the slide usable with a placeholder.
-            return (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: "40vh",
-                  width: "min(640px, 100%)",
-                  marginBottom: "2rem",
-                  border: "1px dashed var(--cds-border-subtle)",
-                  borderRadius: "4px",
-                  color: "var(--cds-text-helper)",
-                  fontSize: "0.875rem",
-                }}
-              >
-                {t("animation_pending").replace("{scene}", slide.animation)}
-              </div>
-            );
-          })()}
-        {slide.component}
-        <h1
-          style={{
-            fontSize: "clamp(1.75rem, 4vw, 3rem)",
-            fontWeight: 300,
-            color: "var(--cds-text-primary)",
-            marginBottom: "1rem",
-          }}
-        >
-          {slide.title}
-        </h1>
-        {slide.body && (
-          <p
-            style={{
-              fontSize: "clamp(1rem, 2vw, 1.375rem)",
-              color: "var(--cds-text-secondary)",
-              maxWidth: "640px",
-              lineHeight: 1.6,
-            }}
-          >
-            {slide.body}
-          </p>
-        )}
+            })()}
+          {slide.component}
+          <h1 className={styles.title}>{slide.title}</h1>
+          {slide.body && <p className={styles.body}>{slide.body}</p>}
+        </div>
       </div>
 
       {/* Nav bar */}
-      <nav
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "0.75rem 1.5rem",
-          borderTop: "1px solid var(--cds-border-subtle)",
-          background: "var(--cds-layer-01)",
-          flexShrink: 0,
-        }}
-      >
-        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+      <nav className={styles.nav} aria-label={t("slide_counter", { current, total })}>
+        <div className={styles.navGroup}>
           <Button
             as={Link}
             href={`/${locale}`}
             kind="ghost"
             size="sm"
             renderIcon={Home}
+            className={styles.navButton}
           >
-            {tnav("home")}
+            <span className={styles.label}>{tnav("home")}</span>
           </Button>
           <Button
             kind="ghost"
@@ -164,16 +129,21 @@ export default function SlideShow({ slides }: SlideShowProps) {
             onClick={() => go(current - 1)}
             disabled={current === 1}
             iconDescription={t("prev")}
+            className={styles.navButton}
           >
-            {t("prev")}
+            <span className={styles.label}>{t("prev")}</span>
           </Button>
         </div>
 
-        <span style={{ fontSize: "0.875rem", color: "var(--cds-text-secondary)" }}>
-          {t("slide_counter", { current, total })}
+        <span className={styles.counter}>
+          <span className={styles.counterLong}>{t("slide_counter", { current, total })}</span>
+          <span className={styles.counterShort} aria-hidden="true">
+            {current} / {total}
+          </span>
         </span>
 
-        <div style={{ display: "flex", gap: "0.5rem" }}>
+        <div className={styles.navGroup}>
+          <LocaleSwitcher />
           <Button
             kind="ghost"
             size="sm"
@@ -195,8 +165,9 @@ export default function SlideShow({ slides }: SlideShowProps) {
             onClick={() => go(current + 1)}
             disabled={current === total}
             iconDescription={t("next")}
+            className={styles.navButton}
           >
-            {t("next")}
+            <span className={styles.label}>{t("next")}</span>
           </Button>
         </div>
       </nav>

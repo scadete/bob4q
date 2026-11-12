@@ -1,38 +1,164 @@
 {
+  "common": {
+    "language": "Idioma"
+  },
+  "meta": {
+    "title": "Quantum Experience Lab",
+    "description": "Workshop prático de computação quântica com IBM Bob + Qiskit"
+  },
   "nav": {
     "home": "Início",
-    "lab": "Laboratório",
+    "lab": "Guia do Laboratório",
     "docs": "Documentação",
-    "demo": "Apresentação"
+    "demo": "Apresentação",
+    "replays": "Replays"
   },
   "home": {
     "hero_title": "Quantum Experience Lab",
-    "hero_tagline": "Computação quântica na prática com IBM Bob + Qiskit",
-    "cta_lab": "Iniciar Laboratório",
+    "hero_tagline": "Computação quântica para iniciantes com IBM Bob + Qiskit",
+    "cta_lab": "Explorar Roteiro",
+    "cta_notebooks": "Notebooks Práticos",
     "cta_demo": "Ver Slides",
-    "modules_title": "Módulos do Workshop",
-    "module_1_title": "Fundamentos Quânticos",
-    "module_1_body": "Qubits, superposição, emaranhamento — do zero com circuitos interativos.",
-    "module_2_title": "Primeiro Circuito com IBM Bob",
-    "module_2_body": "Use o assistente de IA do IBM Bob para escrever, explicar e refinar seu primeiro circuito quântico.",
-    "module_3_title": "Simulador vs QPU Real",
-    "module_3_body": "Execute circuitos no simulador Aer e envie para um backend real da IBM Quantum.",
+    "modules_title": "Notebooks Práticos do Workshop",
+    "modules_subtitle": "Siga os 5 notebooks práticos em ordem — do seu primeiro qubit com o IBM Bob ao desafio final do enigma quântico.",
+    "open_notebook": "Abrir Notebook",
+    "module_1_title": "Olá Quântico com Bob",
+    "module_1_body": "Sem programação prévia: peça ao Bob para girar uma moeda quântica e descubra a superposição.",
+    "module_2_title": "Moedas Mágicas Emaranhadas",
+    "module_2_body": "Conecte dois qubits com um par de Bell e veja-os sincronizados 100% das vezes.",
+    "module_3_title": "Qiskit Moderno e QPUs Reais",
+    "module_3_body": "Primitivas do Qiskit 2.x, simulação no notebook vs hardware real da IBM Quantum.",
     "prereqs_title": "Pré-requisitos",
     "prereq_node": "Node.js ≥ 20",
     "prereq_python": "Python ≥ 3.11",
-    "prereq_ollama": "Ollama (modo local)",
-    "prereq_podman": "Podman ou Docker (modo container)"
+    "prereq_ollama": "Ollama (assistente local opcional)",
+    "prereq_podman": "Podman ou Docker (modo container)",
+    "cta_replays": "Ver Sessões Gravadas",
+    "replays_title": "Sessões Gravadas do Bob",
+    "replays_subtitle": "Quatro sessões reais do Bob, reproduzidas passo a passo. Preveja o que o Bob vai fazer e depois assista. Nada para instalar.",
+    "open_replay": "Abrir Reprodução"
   },
   "lab": {
-    "title": "Laboratório Quântico",
-    "index_intro": "Explore os notebooks do workshop abaixo. Cada um roda localmente no Jupyter — abra o arquivo no caminho indicado, ou use o comando de execução dentro dele.",
+    "title": "Roteiro Quântico do IBM Bob",
+    "subtitle": "Experimente como o IBM Bob guia iniciantes completos do zero aos seus primeiros circuitos com Qiskit 2.x",
+    "index_intro": "Siga o passo a passo guiado abaixo ou acesse diretamente os notebooks Jupyter práticos.",
     "run_locally": "Executar localmente",
     "run_hint": "Este notebook está no repositório em",
     "back": "Todos os notebooks",
-    "not_found": "Notebook não encontrado."
+    "step_counter": "Notebook {current} de {total}",
+    "prev_notebook": "Notebook Anterior",
+    "next_notebook": "Próximo Notebook",
+    "finish_lab": "Voltar ao Roteiro do Laboratório",
+    "not_found": "Notebook não encontrado.",
+    "fallback_notice": "Este notebook ainda não foi traduzido — exibindo a versão em inglês."
+  },
+  "walkthrough": {
+    "title": "Roteiro da Experiência Quântica com IBM Bob",
+    "subtitle": "Descubra como o IBM Bob capacita qualquer pessoa a criar circuitos quânticos sem nenhuma experiência prévia em código.",
+    "badge_beginner": "Para Iniciantes",
+    "badge_unique": "Com IBM Bob",
+    "nav_overview": "Visão Geral",
+    "nav_idea": "1. Ideia em Linguagem Natural",
+    "nav_standards": "2. Padrões Modernos",
+    "nav_flow": "3. Fluxo Passo a Passo",
+    "nav_guardrails": "4. Prevenção de Erros",
+    "nav_sim_vs_qpu": "5. Simulador vs Foguete",
+    "nav_bobalytics": "6. Painel Bobalytics",
+    "nav_notebooks": "Notebooks Práticos",
+    "prompt_label": "Comando para o IBM Bob",
+    "copy_prompt": "Copiar Comando",
+    "copied": "Copiado!",
+    "overview_title": "O que você vai vivenciar",
+    "overview_desc": "Neste roteiro, você verá como o IBM Bob atua como seu par de programação com IA. Desde transformar ideias em circuitos até prevenir erros e executar em simuladores, o Bob faz o trabalho pesado para você focar no aprendizado.",
+    "cap1_title": "Da Ideia ao Circuito em Palavras Simples",
+    "cap1_challenge": "Tutoriais quânticos costumam ser cheios de fórmulas matemáticas assustadoras e sintaxe complexa. Iniciantes não sabem por onde começar.",
+    "cap1_prompt": "Olá Bob, nunca programei antes. Você pode escrever um circuito Qiskit simples que lance uma moeda quântica com chances 50/50 e explicar o que cada linha faz?",
+    "cap1_explanation": "O Bob cria um circuito limpo de 3 linhas usando QuantumCircuit, aplica a porta Hadamard (h) para girar a moeda em superposição, adiciona medição e explica tudo com a analogia da moeda girando.",
+    "cap1_value_trad": "Tradicional: Horas lendo livros de álgebra linear e lutando com sintaxe.",
+    "cap1_value_bob": "Com Bob: 30 segundos para um código funcional e perfeitamente explicado.",
+    "cap2_title": "Padrões Modernos do Qiskit",
+    "cap2_challenge": "Tutoriais antigos de 2021 usam funções descontinuadas como qiskit.execute() que quebram no Qiskit 2.x moderno, gerando erros confusos.",
+    "cap2_prompt": "Encontrei este código antigo na internet: 'execute(qc, Aer.get_backend(\"qasm_simulator\"))'. Por que não funciona e como atualizo para o Qiskit moderno?",
+    "cap2_explanation": "O Bob identifica a função obsoleta, explica que o Qiskit moderno usa Primitivas (SamplerV2 / StatevectorSampler) e reescreve o código nos padrões oficiais de 2026.",
+    "cap2_value_trad": "Tradicional: Frustração com pacotes incompatíveis e APIs descontinuadas.",
+    "cap2_value_bob": "Com Bob: Modernização automática instantânea para padrões do Qiskit 2.x.",
+    "cap3_title": "Fluxo Passo a Passo Integrado",
+    "cap3_challenge": "Iniciantes ficam em dúvida: 'Em que ordem devo rodar as coisas? Como o código quântico se conecta aos gráficos do computador?'",
+    "cap3_prompt": "Bob, qual é o fluxo completo passo a passo para criar, executar e visualizar os resultados de um estado de Bell emaranhado?",
+    "cap3_explanation": "O Bob organiza o fluxo em 4 passos simples: 1. Construir circuito -> 2. Emaranhar com CNOT -> 3. Executar no simulador local -> 4. Exibir gráfico de barras dos resultados.",
+    "cap3_value_trad": "Tradicional: Scripts fragmentados sem visão clara de pipeline.",
+    "cap3_value_bob": "Com Bob: Fluxo claro em 4 etapas acessível para qualquer pessoa.",
+    "cap4_title": "Prevenção Amigável de Erros",
+    "cap4_challenge": "Iniciantes frequentemente esquecem passos essenciais, como medir qubits, resultando em saídas vazias ou incompreensíveis.",
+    "cap4_prompt": "Bob, verifique meu circuito antes de rodar: qc = QuantumCircuit(2); qc.h(0); qc.cx(0,1). Falta alguma coisa?",
+    "cap4_explanation": "O Bob detecta a ausência de medição: 'Seus qubits estão emaranhados, mas você não adicionou portas de medição! Sem medir, o computador clássico não lê o resultado. Adicione qc.measure_all()!'",
+    "cap4_value_trad": "Tradicional: Falhas silenciosas ou mensagens de erro crípticas.",
+    "cap4_value_bob": "Com Bob: Detecção precoce que evita erros antes da execução.",
+    "cap5_title": "Simulador de Voo vs Foguete Real",
+    "cap5_challenge": "Entender onde o código quântico roda: é necessário ter um computador quântico milionário para começar?",
+    "cap5_prompt": "Explique a diferença entre rodar no simulador do meu notebook versus um computador quântico real da IBM.",
+    "cap5_explanation": "O Bob usa a analogia do Simulador de Voo: o processador do seu computador faz os cálculos gratuitamente e sem filas. Quando estiver pronto para o hardware real, usa-se exatamente o mesmo código no IBM Quantum Runtime.",
+    "cap5_value_trad": "Tradicional: Medo de quebrar hardware caro ou gastar créditos.",
+    "cap5_value_bob": "Com Bob: Prototipação segura e gratuita com fácil transição para a nuvem.",
+    "cap6_title": "Painel de Conquistas Bobalytics",
+    "cap6_desc": "Métricas em tempo real mostrando seu progresso e confiança no aprendizado:",
+    "stat_exp": "0 experiência prévia necessária",
+    "stat_circuits": "5 circuitos construídos",
+    "stat_errors": "0 frustração de sintaxe",
+    "stat_version": "Qiskit 2.x mais recente",
+    "notebooks_heading": "Abra os Notebooks Práticos",
+    "notebooks_subheading": "Cada notebook roda localmente no Jupyter. Clique em um notebook para ver as células e copiar o comando de execução:",
+    "start_notebook_1": "Iniciar Notebook 01",
+    "try_in_notebook": "Praticar no Notebook"
+  },
+  "notebooks": {
+    "01-hello-quantum-with-bob": {
+      "title": "01 — Olá Quântico: Seu Primeiro Qubit",
+      "description": "Peça ao IBM Bob para criar um cara ou coroa quântico 50/50, descubra a superposição e execute seu primeiro circuito."
+    },
+    "02-entanglement-magic-coins": {
+      "title": "02 — Moedas Mágicas: Emaranhamento com Bob",
+      "description": "Conecte dois qubits em gêmeos mágicos sincronizados com a porta CNOT — eles sempre combinam!"
+    },
+    "03-modern-qiskit-guardrails": {
+      "title": "03 — Qiskit Moderno e Proteções com IA",
+      "description": "Veja como o Bob detecta e atualiza automaticamente códigos antigos de 2021 para as Primitivas modernas do Qiskit 2.x."
+    },
+    "04-simulator-vs-real-qpu": {
+      "title": "04 — Simulador de Voo vs Foguete Real",
+      "description": "Explore a diferença entre simular no notebook e enviar tarefas reais para o hardware da IBM Quantum."
+    },
+    "05-bobalytics-and-capstone": {
+      "title": "05 — Enigma Quântico e Bobalytics",
+      "description": "Resolva o enigma da moeda secreta em uma única tentativa e veja seu painel de conquistas com o Bob."
+    }
+  },
+  "whyBob": {
+    "trigger_label": "Por que o IBM Bob?",
+    "modal_heading": "Por que o IBM Bob em vez de outras ferramentas agênticas?",
+    "modal_intro": "A maior diferenciação do Bob combina profundidade nas plataformas legadas da IBM, controle de implantação de nível empresarial e fluxos de trabalho híbridos estruturados. Veja onde ele se destaca:",
+    "scroll_left": "Rolar cartões para a esquerda",
+    "scroll_right": "Rolar cartões para a direita",
+    "tag_mainframe": "IBM i & Mainframe",
+    "tag_enterprise": "Empresa / Air-gapped",
+    "tag_security": "DevSecOps",
+    "tag_editor": "Agnóstico de editor",
+    "tag_workflow": "Fluxos Híbridos",
+    "tag_compliance": "Menor privilégio",
+    "card_legacy_title": "Modernização de Plataformas Legadas da IBM",
+    "card_legacy_body": "Bob for Z e Bob for i trazem fluxos de trabalho agênticos específicos para refatoração COBOL/PL/I, modernização RPG, extração de regras de negócio e estratégia SQL no Db2 for i — sem engenharia de prompt.",
+    "card_air_gapped_title": "Residência de Dados e Implantação Air-gapped",
+    "card_air_gapped_body": "Implantação totalmente autogerenciada no Red Hat OpenShift. Suporta espelhamento de imagens air-gapped, identidade LDAP/Keycloak, certificação ISO 27001 e governança via MDM/GPO.",
+    "card_devsecops_title": "Pipelines de DevSecOps e Conformidade",
+    "card_devsecops_body": "Varredura conforme OWASP ASVS, exportação de arquivos SARIF para GitHub Advanced Security e CI/CD, e geração de POA&M OSCAL para consumo por agentes de IA.",
+    "card_acp_title": "Runtime Agêntico Agnóstico de Editor (ACP)",
+    "card_acp_body": "Bob Shell fala Agent Client Protocol — o LSP dos agentes de código. Qualquer editor ACP obtém o runtime completo do Bob: acesso a modelos, servidores MCP e execução de shell.",
+    "card_hybrid_title": "Fluxos de Trabalho Híbridos Agênticos + Determinísticos",
+    "card_hybrid_body": "Os fluxos intercalam etapas agênticas abertas com operações determinísticas, reduzindo custo de tokens e produzindo resultados consistentes e previsíveis para casos de uso empresariais.",
+    "card_modes_title": "Arquitetura de Modos com Menor Privilégio",
+    "card_modes_body": "Modos Ask / Plan / Agent aplicam escopo de capacidades por tarefa. Ask apenas lê; Plan escreve planos, não código; Agent executa comandos. Auditável em ambientes regulados."
   },
   "docs": {
-    "locale_switcher": "Idioma",
     "not_found": "Documento não encontrado."
   },
   "demo": {
@@ -40,6 +166,172 @@
     "next": "Próximo",
     "fullscreen": "Tela cheia",
     "slide_counter": "Slide {current} de {total}",
-    "animation_pending": "Animação em breve: {scene}"
+    "animation_pending": "Animação em breve: {scene}",
+    "open_lab": "Abrir Laboratório →",
+    "open_replays": "Ver Sessões Gravadas →"
+  },
+  "slides": {
+    "intro": {
+      "title": "Quantum Experience Lab",
+      "body": "Computação quântica na prática com IBM Bob + Qiskit"
+    },
+    "arc": {
+      "title": "O roteiro de hoje",
+      "body": "Dois fios, um ciclo: conceitos quânticos e o IBM Bob como seu par de programação para construí-los. Terminaremos respondendo à pergunta real — quando a computação quântica é de fato mais rápida, e uma IA pode ajudar você a construir o circuito que prova isso?"
+    },
+    "meet_bob": {
+      "title": "Conheça o IBM Bob",
+      "body": "O IBM Bob é um assistente agêntico — ele não apenas responde, ele chama ferramentas. O MCP (Model Context Protocol) permite que o Bob acesse um Qiskit Code Assistant para escrever e explicar circuitos reais — a mesma ferramenta, rodando na sua máquina ou em um servidor remoto compartilhado — com você no controle o tempo todo."
+    },
+    "qubit": {
+      "title": "O que é um Qubit?",
+      "body": "Um qubit é a unidade fundamental de informação quântica. Diferente de um bit clássico, ele pode existir em uma superposição de 0 e 1 ao mesmo tempo."
+    },
+    "superposition": {
+      "title": "Superposição",
+      "body": "Aplicar uma porta Hadamard coloca o qubit em superposição uniforme — probabilidade igual de medir 0 ou 1."
+    },
+    "measurement": {
+      "title": "Medição e estatística",
+      "body": "Medir um qubit o colapsa para um 0 ou 1 clássico — mas uma única execução mostra apenas o resultado, não as probabilidades. Repita o mesmo circuito muitas vezes e o histograma dos resultados converge para as probabilidades reais."
+    },
+    "entanglement": {
+      "title": "Emaranhamento",
+      "body": "Dois qubits emaranhados compartilham um estado quântico — medir um determina instantaneamente o outro, independentemente da distância."
+    },
+    "gates": {
+      "title": "Portas e circuitos",
+      "body": "Um circuito é lido da esquerda para a direita: portas (X, H) atuam sobre fios (qubits), uma porta de dois fios como a CNOT os emaranha, e um medidor faz a medição. Saber ler esse diagrama é o que permite a você — e ao Bob — falar sobre um circuito com precisão."
+    },
+    "ask_bob": {
+      "title": "Peça ao Bob para construir",
+      "body": "Ao vivo: peça ao Bob para construir o circuito de Bell. O Bob chama a ferramenta MCP explain_circuit — o mesmo Qiskit Code Assistant configurado no MCP do Bob — e devolve código Qiskit funcional junto com uma explicação em linguagem simples."
+    },
+    "run_read": {
+      "title": "Execute e interprete",
+      "body": "O código que o Bob escreveu roda localmente no simulador Aer. O resultado: um histograma de contagens com picos em 00 e 11 — o Bob o interpreta como “esses dois qubits estão correlacionados, nunca 01 ou 10”."
+    },
+    "classical_parity": {
+      "title": "Verificação de paridade clássica",
+      "body": "Imagine uma função oculta que retorna um único bit de paridade a partir de várias entradas. Classicamente não há atalho: você a consulta uma vez por entrada, acumulando os resultados, antes de poder calcular a paridade."
+    },
+    "quantum_parity": {
+      "title": "Verificação de paridade quântica",
+      "body": "Coloque as mesmas entradas em superposição e consulte o oráculo uma única vez. O phase kickback grava a resposta na fase de todos os ramos de uma vez; a interferência a concentra em um único resultado certo. Mesma resposta, uma consulta em vez de muitas — esse truque do oráculo é exatamente o que Grover generaliza a seguir."
+    },
+    "sim_vs_qpu": {
+      "title": "Simulador vs QPU real",
+      "body": "Tudo até aqui rodou no Aer, um simulador clássico — rápido, gratuito e sem ruído. Os backends da IBM Quantum são qubits supercondutores reais: o mesmo código Qiskit, mas sujeito a decoerência e erros de porta reais. A mesma chamada run_via_backend() escolhe o alvo; com um IBMQ_API_TOKEN definido, o mesmo circuito pode rodar em hardware real."
+    },
+    "oracle_search": {
+      "title": "O oráculo e a busca",
+      "body": "Grover generaliza o truque da paridade para busca: um oráculo inverte a fase da amplitude do(s) estado(s) que satisfazem o seu problema, e então a difusão reflete todas as amplitudes em torno da média, amplificando a marcada. Repita ~π/4·√N vezes e a resposta domina — um ganho quadrático em relação a verificar N possibilidades uma a uma."
+    },
+    "sat_oracle": {
+      "title": "Construa um oráculo SAT com o Bob",
+      "body": "Projeto final: escolha uma pequena fórmula booleana. Peça ao Bob — acessando o MCP do Qiskit Code Assistant, rodando no seu laptop ou em um servidor remoto compartilhado — para criar o PhaseOracle que marca a atribuição que a satisfaz. Execute Grover no simulador e veja o histograma convergir para a resposta, verificada com uma checagem clássica por força bruta."
+    },
+    "live_demo": {
+      "title": "Demonstração ao vivo",
+      "body": "Veja sessões gravadas reais do Bob, ou abra o laboratório para rodar seu primeiro circuito quântico."
+    }
+  },
+  "replay": {
+    "index_title": "Sessões gravadas do Bob",
+    "index_body": "Preveja o que o Bob vai fazer e depois veja a sessão passo a passo.",
+    "recorded": "Sessão gravada, Bob {version}, {date}. Reproduzida, não ao vivo.",
+    "sample": "Conteúdo de exemplo, ainda não é uma gravação real.",
+    "predict": "Preveja primeiro",
+    "right": "Certo.",
+    "wrong": "Quase.",
+    "press_play": "Aperte Play ou Próximo para começar.",
+    "no_visual": "A imagem aparece quando o Bob chega a um passo que a tem.",
+    "back": "Voltar",
+    "play": "Play",
+    "pause": "Pausar",
+    "next": "Próximo",
+    "restart": "Reiniciar",
+    "counter": "Passo {current} de {total}",
+    "main_run": "Execução principal",
+    "what_if": "E se?",
+    "takehome": "Para levar",
+    "step": {
+      "prompt": "prompt",
+      "assistant": "Bob",
+      "rule": "regra carregada",
+      "skill": "skill carregada",
+      "tool_call": "chamada de ferramenta",
+      "tool_result": "resultado",
+      "file": "arquivo escrito",
+      "run_output": "saída"
+    },
+    "show_more": "Mostrar mais {count} linhas",
+    "show_less": "Mostrar menos",
+    "pins": "Versões"
+  },
+  "replays": {
+    "uc1_coin": {
+      "title": "Caso 1: uma moeda quântica em português simples",
+      "question": "Qual porta coloca um qubit numa mistura igual de 0 e 1?",
+      "choice0": "X (inverter)",
+      "choice1": "H (Hadamard)",
+      "choice2": "Z (fase)",
+      "explain": "A porta Hadamard faz a moeda justa.",
+      "takehome": "Prompt: Faça uma moeda quântica e rode 1000 vezes. Arquivo: coin.py. Regra: Qiskit moderno, com medição."
+    },
+    "uc1_coin_two_qubits": {
+      "title": "E se: duas moedas que sempre combinam",
+      "question": "Que contagens duas moedas emaranhadas dão?",
+      "choice0": "00, 01, 10, 11 por igual",
+      "choice1": "Só 01 e 10",
+      "choice2": "Só 00 e 11",
+      "explain": "Moedas emaranhadas nunca discordam.",
+      "takehome": "Prompt: /qiskit-beginner-circuit duas moedas que sempre caem iguais. Arquivo: twins.py (Hadamard em um qubit, depois uma porta CX). Resultado nesta execução: só apareceram 00 e 11."
+    },
+    "uc2_explain_docs": {
+      "title": "Caso 2: o Bob explica um circuito com a documentação do Qiskit",
+      "question": "No bell.py, o que a porta CX (CNOT) faz com o segundo qubit?",
+      "choice0": "Inverte-o só quando o primeiro qubit é 1",
+      "choice1": "Troca os dois qubits",
+      "choice2": "Mede-o",
+      "explain": "A CX inverte o qubit alvo quando o qubit de controle é 1. Depois da H no primeiro qubit, isso liga os dois.",
+      "takehome": "Prompt: Explique o bell.py porta por porta e linke a página da documentação de cada uma. Precisa: o servidor MCP qiskit-docs (uvx qiskit-docs-mcp-server), sem conta."
+    },
+    "uc2_no_docs": {
+      "title": "E se: a mesma pergunta sem a ferramenta de documentação",
+      "question": "Sem a ferramenta de documentação, de onde vêm os links e fatos do Bob?",
+      "choice0": "De páginas que ele buscou agora",
+      "choice1": "Do que ele lembra do treinamento",
+      "choice2": "De um modelo local neste notebook",
+      "explain": "Nada foi buscado. Os links vêm da memória; usam o endereço antigo docs.quantum.ibm.com, que redireciona. Nada foi verificado.",
+      "takehome": "Mesmo prompt, MCP de documentação desligado. A explicação é fluente, mas sem fonte e sem checagem: confira os links."
+    },
+    "uc3_migrate_skill": {
+      "title": "Caso 3: migrar código Qiskit antigo com uma skill",
+      "question": "Ao mover o deutsch_jozsa.py do Qiskit 1.x para o 2.x, o que muda?",
+      "choice0": "O oráculo e as portas são reescritos",
+      "choice1": "Só a chamada ao Sampler e a leitura dos resultados",
+      "choice2": "Nada, ele ainda roda",
+      "explain": "Só a primitiva muda: o Sampler V1 não existe mais no 2.x. O circuito fica igual. A skill foi feita para o qiskit-ibm-runtime; o Bob avisou isso e aplicou a mudança equivalente.",
+      "takehome": "Prompt: /migrate-qiskit-ibm-runtime Migre o deutsch_jozsa.py para a versão mais recente do Qiskit. Skill de github.com/Qiskit/skills. Custo desta execução: cerca de 1,2 Bobcoins, porque a skill lê um registro grande de regras."
+    },
+    "uc3_migrate_docs": {
+      "title": "E se: a mesma migração com a ferramenta de docs, sem skill",
+      "question": "De onde o Bob tira a API de substituição aqui?",
+      "choice0": "Da documentação do Qiskit, pelo servidor MCP",
+      "choice1": "De uma skill de migração",
+      "choice2": "Só da memória dele",
+      "explain": "Ele buscou na documentação, abriu o guia de V1 para V2 e editou o arquivo. Mesmo resultado, cerca de um quinto do custo.",
+      "takehome": "Prompt: Migre o deutsch_jozsa.py para a versão mais recente do Qiskit (2.x). Use a documentação do Qiskit para achar as APIs de substituição. Precisa: o servidor MCP qiskit-docs."
+    },
+    "uc4_sim_to_qpu": {
+      "title": "Caso 4: do código simulado para um computador quântico real",
+      "question": "Em um QPU real, o que o oráculo constante vai retornar?",
+      "choice0": "Exatamente 000 todas as vezes",
+      "choice1": "Quase sempre 000, com um pouco de ruído",
+      "choice2": "Bits aleatórios",
+      "explain": "Quase sempre 000 (1002 de 1024 execuções) com alguns resultados errados. O hardware real tem ruído; o simulador não.",
+      "takehome": "Prompt: adapte o dj_sim.py para rodar em um computador quântico real da IBM com o qiskit-ibm-runtime. Precisa: uma conta IBM Quantum (o plano Open gratuito serve, 10 minutos de QPU), o token em QISKIT_IBM_TOKEN, nunca no código. Esta reprodução rodou dois jobs pequenos no ibm_kingston."
+    }
   }
 }

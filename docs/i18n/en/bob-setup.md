@@ -2,6 +2,8 @@
 
 This guide walks you through setting up IBM Bob with the Qiskit Code Assistant model via Ollama for the **bob4q** workshop.
 
+> **Note for Beginners:** Running Ollama locally is **optional**. If your laptop has limited RAM or you don't have Ollama installed, all workshop notebooks and the web walkthrough include built-in offline explanations so you can complete the entire lab with zero setup.
+
 ---
 
 ## Prerequisites

@@ -5,8 +5,13 @@
 #   Install uv:   winget install astral-sh.uv
 #   Install pnpm: npm install -g pnpm
 #   Or use: https://nodejs.org  and  https://docs.astral.sh/uv/getting-started/installation/
+#
+# Note: manim/ is not a Python package — its scenes are read-only reference
+# specs for the CSS/JS animations (see manim/README.md). Nothing to install.
 
 $ErrorActionPreference = "Stop"
+
+Set-Location (Join-Path $PSScriptRoot "..")
 
 Write-Host "==> Checking prerequisites..."
 & "$PSScriptRoot\check-prereqs.ps1"
@@ -18,15 +23,16 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host "==> Installing JS dependencies..."
 pnpm install
+if ($LASTEXITCODE -ne 0) { Write-Host "pnpm install failed."; exit 1 }
 
 Write-Host "==> Setting up MCP server Python env..."
-Push-Location mcp-server; uv sync; Pop-Location
-
-Write-Host "==> Setting up backend Python env..."
-Push-Location backend; uv sync; Pop-Location
-
-Write-Host "==> Setting up Manim Python env..."
-Push-Location manim; uv sync; Pop-Location
+Push-Location mcp-server
+try {
+    uv sync
+    if ($LASTEXITCODE -ne 0) { Write-Host "uv sync failed in mcp-server."; exit 1 }
+} finally {
+    Pop-Location
+}
 
 Write-Host "==> Copying .env.example to .env..."
 if (-not (Test-Path ".env")) {
@@ -41,7 +47,8 @@ Write-Host "Setup complete!"
 Write-Host ""
 Write-Host "To start the workshop environment:"
 Write-Host "  Terminal 1 (MCP server):  cd mcp-server; uv run server.py"
-Write-Host "  Terminal 2 (Backend API): cd backend; uv run uvicorn main:app --reload"
-Write-Host "  Terminal 3 (Frontend):    pnpm dev"
+Write-Host "  Terminal 2 (Frontend):    pnpm dev"
+Write-Host ""
+Write-Host "Notebooks run locally in Jupyter - see each notebook's intro cell for its uv command."
 Write-Host ""
 Write-Host "Or use Podman Compose: podman compose up"

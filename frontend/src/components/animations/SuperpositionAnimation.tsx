@@ -183,7 +183,7 @@ export function SuperpositionAnimation() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const stageSize = "min(340px, 80vw)";
+  const stageSize = "min(max(340px, 22vw), calc(100vw - 4rem), calc(100dvh - 30rem))";
   return (
     <div
       role="img"

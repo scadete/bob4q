@@ -5,7 +5,11 @@ import { EntanglementAnimation } from "@/components/animations/EntanglementAnima
 import { AgenticLoopAnimation } from "@/components/animations/AgenticLoopAnimation";
 import { ResultsHistogramAnimation } from "@/components/animations/ResultsHistogramAnimation";
 import { GatesAnimation } from "@/components/animations/GatesAnimation";
-import { ParityAnimation } from "@/components/animations/ParityAnimation";
+import {
+  ClassicalParityAnimation,
+  ParityAnimation,
+  QuantumParityAnimation,
+} from "@/components/animations/ParityAnimation";
 import { AmplitudeAmplificationAnimation } from "@/components/animations/AmplitudeAmplificationAnimation";
 
 /**
@@ -28,6 +32,8 @@ export type AnimationName =
   | "resultsHistogram"
   | "gates"
   | "parity"
+  | "classicalParity"
+  | "quantumParity"
   | "amplitudeAmplification";
 
 // Populated as each animation component is implemented and approved.
@@ -39,6 +45,8 @@ export const animations: Partial<Record<AnimationName, ComponentType>> = {
   resultsHistogram: ResultsHistogramAnimation,
   gates: GatesAnimation,
   parity: ParityAnimation,
+  classicalParity: ClassicalParityAnimation,
+  quantumParity: QuantumParityAnimation,
   amplitudeAmplification: AmplitudeAmplificationAnimation,
 };
 
